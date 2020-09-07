@@ -40,9 +40,9 @@ public class MyTest {
     public void readTest() {
         File file = new File("/tmp/test");
         FileInputStream fileInputStream = null;
-        long startTime = System.currentTimeMillis();
+        long startTime = System.nanoTime();
         int size = (int) file.length();
-        for (int i = 0 ; i < 2000; i++) {
+        for (int i = 0 ; i < 1; i++) {
             try {
                 fileInputStream = new FileInputStream(file);
                 byte[] bytes = new byte[size];
@@ -59,7 +59,7 @@ public class MyTest {
                 }
             }
         }
-        long endTime = System.currentTimeMillis();
+        long endTime = System.nanoTime();
         System.out.println("消耗时间：" + (endTime - startTime));
     }
 
