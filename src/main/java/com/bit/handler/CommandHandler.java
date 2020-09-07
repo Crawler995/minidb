@@ -21,7 +21,7 @@ public class CommandHandler {
     }
 
     public void handle(String command) {
-        System.out.println("收到消息：" + command);
+        System.out.println("处理命令：" + command);
         if ("exit".equals(command)) {
             System.exit(0);
         }

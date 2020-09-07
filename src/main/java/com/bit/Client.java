@@ -14,7 +14,7 @@ public class Client {
         while (true) {
             System.out.print("db > ");
             Scanner scanner = new Scanner(System.in);
-            //输入一组单词
+            //输入命令
             String command = scanner.nextLine();
             /**
              * Deal command
