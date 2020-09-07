@@ -28,4 +28,8 @@
   - 注释：中文，遵循`Java doc`注释规范。
   - 其它的基本上可遵循业界Java规范，或者编辑器中安装统一的代码检查插件（待定，候选：阿里Java开发规范插件）。
 
-  
+
+## 参考资料
+
+- [使用C语言从零开始仿造sqlite](https://cstack.github.io/db_tutorial/)
+- [使用C#从零开始编写数据库](https://www.codeproject.com/articles/1029838/build-your-own-database)
