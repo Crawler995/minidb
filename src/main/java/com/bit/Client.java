@@ -1,7 +1,7 @@
 package com.bit;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import com.bit.handler.CommandHandler;
+
 import java.util.Scanner;
 
 /**
@@ -10,6 +10,7 @@ import java.util.Scanner;
  */
 public class Client {
     public static void main(String[] args) {
+        CommandHandler commandHandler = CommandHandler.getInstance();
         while (true) {
             System.out.print("db > ");
             Scanner scanner = new Scanner(System.in);
@@ -19,7 +20,7 @@ public class Client {
              * Deal command
              * 处理输入命令，调用指定接口
              */
-            System.out.println(command);
+            commandHandler.handle(command);
         }
     }
 }
