@@ -1,3 +1,4 @@
+package com.bit.handler;
 // Generated from MySqlLexer.g4 by ANTLR 4.8
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
