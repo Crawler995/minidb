@@ -1,0 +1,11 @@
+syntax = "proto2";
+
+package minidb.column;
+
+option java_package = "com.bit.api.column";
+option java_outer_classname = "ColumnMessage";
+
+message Column {
+  required bytes name = 1;
+  optional bytes value = 2;
+}

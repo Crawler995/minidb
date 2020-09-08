@@ -9,6 +9,8 @@
     <version>1.0.0-SNAPSHOT</version>
 
     <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <protobuf.version>3.1.0</protobuf.version>
         <protobuf-lite.version>3.0.1</protobuf-lite.version>
         <protoc-gen-javalite.version>3.0.0</protoc-gen-javalite.version>
@@ -16,6 +18,7 @@
             ${project.build.directory}/generated-sources
         </protobuf.output.dir>
     </properties>
+
 
     <dependencies>
         <dependency>
@@ -33,6 +36,12 @@
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
             <version>3.6.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.4</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
