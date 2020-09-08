@@ -30,7 +30,7 @@ public class TableStore {
 
     private static List<Table> tableCache = null;
 
-    private String tablePosition = DBConfig.TABLE_POSITION;
+    private String tablePosition = DBConfig.DB_POSITION+DBConfig.TABLE_POSITION;
 
     public static TableStore getInstance() {
         if (tableStore == null) {
