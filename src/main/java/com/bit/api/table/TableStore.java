@@ -1,5 +1,6 @@
 package com.bit.api.table;
 
+import com.bit.constance.DBConfig;
 import com.bit.constance.DataType;
 import com.bit.exception.NoNameTableException;
 import com.bit.exception.SameNameTableException;
@@ -28,6 +29,8 @@ public class TableStore {
     private static TableStore tableStore;
 
     private static List<Table> tableCache = null;
+
+    private String tablePosition = DBConfig.TABLE_POSITION;
 
     public static TableStore getInstance() {
         if (tableStore == null) {
@@ -96,7 +99,7 @@ public class TableStore {
         List<Table> tables = new LinkedList<>();
         FileInputStream fileInputStream = null;
         try {
-            fileInputStream = new FileInputStream(new File("/tmp/table.db"));
+            fileInputStream = new FileInputStream(new File(tablePosition));
             while (true) {
                 Table table = new Table();
                 TableMessage.Table tableMessage = TableMessage.Table.parseDelimitedFrom(fileInputStream);
@@ -134,7 +137,7 @@ public class TableStore {
     private void storeToFile(List<Table> tables, Boolean isCover) {
         FileOutputStream fileOutputStream = null;
         try {
-            fileOutputStream = new FileOutputStream(new File("/tmp/table.db"), !isCover);
+            fileOutputStream = new FileOutputStream(new File(tablePosition), !isCover);
             for (Table table : tables) {
                 Map<String, Integer> typeMap = table.getType();
                 TableMessage.Table.Builder builder = TableMessage.Table.newBuilder();
