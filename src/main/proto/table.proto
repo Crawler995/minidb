@@ -2,7 +2,7 @@ syntax = "proto2";
 
 package minidb.table;
 
-option java_package = "com.bit.table";
+option java_package = "com.bit.api.table";
 option java_outer_classname = "TableMessage";
 
 message Table {
