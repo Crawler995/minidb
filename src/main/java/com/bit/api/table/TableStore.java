@@ -1,10 +1,16 @@
 package com.bit.api.table;
 
+import com.bit.constance.DataType;
+import com.bit.exception.NoNameTableException;
+import com.bit.exception.SameNameTableException;
 import com.bit.model.Table;
 import com.bit.utils.FormatUtil;
 import com.google.protobuf.ByteString;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,41 +41,55 @@ public class TableStore {
     }
 
     /**
-     * @param key   表名
-     * @param value 表字段的名字和字段类型的map
+     * @param newTable
      * @Description 创建表 并持久化
      */
-    public void createTable(String key, Map<String, Integer> value) {
-        TableMessage.Table.Builder builder = TableMessage.Table.newBuilder();
-
-        for (Map.Entry<String, Integer> entry : value.entrySet()) {
-            TableMessage.Type type = TableMessage.Type.newBuilder()
-                    .setKey(ByteString.copyFrom(FormatUtil.string2Bytes(entry.getKey())))
-                    .setType(entry.getValue()).build();
-            builder.addType(type);
+    public void createTable(Table newTable) throws SameNameTableException {
+        if (tableCache == null) {
+            getTables();
         }
-        builder.setName(ByteString.copyFrom(FormatUtil.string2Bytes(key)));
-        TableMessage.Table table = builder.build();
-        System.out.println(table.toByteArray().length);
-        FileOutputStream fileOutputStream = null;
-        try {
-            fileOutputStream = new FileOutputStream(new File("/tmp/table.db"), true);
-            table.writeDelimitedTo(fileOutputStream);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (fileOutputStream != null) {
-                try {
-                    fileOutputStream.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        for (Table table : tableCache) {
+            if (table.getName().equals(newTable.getName())) {
+                throw new SameNameTableException(newTable.getName() + " 已经存在该名字表，无法创建");
             }
         }
+        List<Table> tables = new LinkedList<>();
+        tables.add(newTable);
+        storeToFile(tables);
+    }
+
+    public void deleteTable(String name) throws NoNameTableException {
+        if (tableCache == null) {
+            getTables();
+        }
+        for (Table table : tableCache) {
+            if (table.getName().equals(name)) {
+                tableCache.remove(table);
+                storeToFile(tableCache, true);
+                return;
+            }
+        }
+        throw new NoNameTableException(name + " 没有该名字表，无法删除");
+    }
+
+    public void updateTable(Table newTable) throws NoNameTableException {
+        if (tableCache == null) {
+            getTables();
+        }
+        for (Table table : tableCache) {
+            if (table.getName().equals(newTable.getName())) {
+                tableCache.remove(table);
+                tableCache.add(newTable);
+                storeToFile(tableCache, true);
+                return;
+            }
+        }
+        throw new NoNameTableException(newTable.getName() + " 没有该名字表，无法更新");
     }
 
     /**
      * Description： 获取所有表,并缓存在内存中
+     *
      * @return
      */
     public List<Table> getTables() {
@@ -101,12 +121,53 @@ public class TableStore {
         return tables;
     }
 
+    private void storeToFile(List<Table> tables) {
+        storeToFile(tables, false);
+    }
+
+    /**
+     * 储存table到文件
+     *
+     * @param tables  储存的table
+     * @param isCover 是否覆盖原文件
+     */
+    private void storeToFile(List<Table> tables, Boolean isCover) {
+        FileOutputStream fileOutputStream = null;
+        try {
+            fileOutputStream = new FileOutputStream(new File("/tmp/table.db"), !isCover);
+            for (Table table : tables) {
+                Map<String, Integer> typeMap = table.getType();
+                TableMessage.Table.Builder builder = TableMessage.Table.newBuilder();
+
+                for (Map.Entry<String, Integer> entry : typeMap.entrySet()) {
+                    TableMessage.Type type = TableMessage.Type.newBuilder()
+                            .setKey(ByteString.copyFrom(FormatUtil.string2Bytes(entry.getKey())))
+                            .setType(entry.getValue()).build();
+                    builder.addType(type);
+                }
+                builder.setName(ByteString.copyFrom(FormatUtil.string2Bytes(table.getName())));
+                TableMessage.Table tableMessage = builder.build();
+                tableMessage.writeDelimitedTo(fileOutputStream);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (fileOutputStream != null) {
+                try {
+                    fileOutputStream.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     public Table getTable(String name) {
         if (tableCache == null) {
             getTables();
         }
         for (Table table : tableCache) {
-            if (table.getName() == name) {
+            if (table.getName().equals(name)) {
                 return table;
             }
         }
@@ -114,9 +175,16 @@ public class TableStore {
     }
 
     public static void main(String[] args) {
-//        Map<String, Integer> map = new HashMap();
-//        map.put("name", DataType.STRING.ordinal());
-//        TableStore.getInstance().createTable("老师", map);
+        Table table = new Table();
+        table.setName("dog");
+        Map<String, Integer> typeMap = new HashMap<>();
+        typeMap.put("age", DataType.INT.ordinal());
+        table.setType(typeMap);
+        try {
+            TableStore.getInstance().updateTable(table);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         System.out.println(TableStore.getInstance().getTables());
     }
 }
