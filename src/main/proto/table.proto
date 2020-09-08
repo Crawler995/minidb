@@ -6,11 +6,11 @@ option java_package = "com.bit.table";
 option java_outer_classname = "TableMessage";
 
 message Table {
-    required string name = 1;
+    required bytes name = 1;
     repeated Type type = 2;
 }
 
 message Type {
-    required string key = 1;
+    required bytes key = 1;
     required int32 type = 2;
 }
