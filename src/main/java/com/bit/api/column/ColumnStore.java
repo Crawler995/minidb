@@ -21,7 +21,7 @@ public class ColumnStore {
 
     public ColumnStore(Table table) {
         this.table = table;
-        columnPosition = DBConfig.DB_POSITION + DBConfig.COLUMN_POSITION + "/" + table.getName();
+        columnPosition = DBConfig.COLUMN_POSITION + "/" + table.getName();
     }
 
     private Map<Long, ColumnMessage.Column> columnCache = null;
