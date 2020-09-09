@@ -179,17 +179,32 @@ public class TableStore {
         return null;
     }
 
-    public static void main(String[] args) {
-        Table table = new Table();
-        table.setName("dog");
+    public static void main(String[] args) throws SameNameTableException, NoNameTableException {
+        Table dogTable = TableStore.getInstance().getTable("dog");
+
+        if (dogTable != null) {
+            TableStore.getInstance().deleteTable("dog");
+            System.out.println("删除已存在的dog表");
+        }
+
+        // 创建dog表
+        dogTable = new Table();
+        dogTable.setName("dog");
+
         Map<String, Integer> typeMap = new HashMap<>();
         typeMap.put("age", DataType.INT.ordinal());
-        table.setType(typeMap);
-        try {
-            TableStore.getInstance().updateTable(table);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        dogTable.setType(typeMap);
+
+        TableStore.getInstance().createTable(dogTable);
+        System.out.println("创建dog表");
+        System.out.println("目前已存在的表：");
+        System.out.println(TableStore.getInstance().getTables());
+
+        // 给dog表增加一个字段
+        dogTable.getType().put("id_num", DataType.LONG.ordinal());
+        TableStore.getInstance().updateTable(dogTable);
+        System.out.println("为dog表增加字段id_num");
+        System.out.println("目前已存在的表：");
         System.out.println(TableStore.getInstance().getTables());
     }
 }
