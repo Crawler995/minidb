@@ -6,6 +6,7 @@ import com.bit.exception.NoNameTableException;
 import com.bit.exception.SameNameTableException;
 import com.bit.model.Table;
 import com.bit.utils.FormatUtil;
+import com.bit.utils.PathUtil;
 import com.google.protobuf.ByteString;
 
 import java.io.File;
@@ -30,13 +31,14 @@ public class TableStore {
 
     private static List<Table> tableCache = null;
 
-    private String tablePosition = DBConfig.DB_POSITION+DBConfig.TABLE_POSITION;
+    private static String tablePosition = DBConfig.TABLE_POSITION;
 
     public static TableStore getInstance() {
         if (tableStore == null) {
             synchronized (TableStore.class) {
                 if (tableStore == null) {
                     tableStore = new TableStore();
+                    PathUtil.ensureFile(tablePosition);
                 }
             }
         }
