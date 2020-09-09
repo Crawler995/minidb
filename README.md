@@ -28,6 +28,15 @@
   - 注释：中文，遵循`Java doc`注释规范。
   - 其它的基本上可遵循业界Java规范，或者编辑器中安装统一的代码检查插件（待定，候选：阿里Java开发规范插件）。
 
+## 运行步骤
+
+- 确保Java 8安装无误
+- 确保IDEA能正常运行Java程序
+- 将项目导入IDEA，确保maven依赖顺利安装完成
+- 在IDEA右侧栏maven中找到minidb -> Plugins -> protobuf -> protobuf:compile命令，运行之
+- [在IDEA中安装lombok插件](https://www.cnblogs.com/pcheng/p/10945476.html)
+- 运行main函数
+
 
 ## 参考资料
 
