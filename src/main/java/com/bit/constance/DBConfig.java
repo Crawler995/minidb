@@ -8,4 +8,6 @@ public class DBConfig {
     public static String DB_POSITION = "/tmp/minidb";
 
     public static String TABLE_POSITION = "/table";
+
+    public static String COLUMN_POSITION = "/column";
 }

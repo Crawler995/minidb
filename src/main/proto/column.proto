@@ -6,6 +6,11 @@ option java_package = "com.bit.api.column";
 option java_outer_classname = "ColumnMessage";
 
 message Column {
+  required int64 id = 1;
+  repeated Data data = 2;
+}
+
+message Data {
   required bytes name = 1;
   optional bytes value = 2;
 }
