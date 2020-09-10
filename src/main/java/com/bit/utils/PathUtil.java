@@ -39,7 +39,7 @@ public class PathUtil {
 
     /**
      * e.g.
-     * ensureDir("C:\\fa\\s\\tmp\\db") -> 确保C:\\fa\\s\\tmp\\db文件存在
+     * ensureFile("C:\\fa\\s\\tmp\\db") -> 确保C:\\fa\\s\\tmp\\db文件存在
      */
     public static void ensureFile(String filepath) {
         ensureDir(filepath);
