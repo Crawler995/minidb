@@ -39,6 +39,11 @@
         </dependency>
         <dependency>
             <groupId>com.esotericsoftware</groupId>
+            <artifactId>kryo-serializers</artifactId>
+            <version>0.42</version>
+        </dependency>
+        <dependency>
+            <groupId>com.esotericsoftware</groupId>
             <artifactId>kryo</artifactId>
             <version>4.0.1</version>
         </dependency>
