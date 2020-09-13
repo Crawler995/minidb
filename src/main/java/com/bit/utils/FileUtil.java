@@ -45,4 +45,44 @@ public class FileUtil {
             e.printStackTrace();
         }
     }
+
+    public static byte[] getFileByte(String filePath, Long num) {
+        RandomAccessFile randomAccessFile = null;
+        byte[] bytes = new byte[4096];
+        try {
+            randomAccessFile = new RandomAccessFile(filePath, "r");
+            randomAccessFile.seek(num*4096);
+            randomAccessFile.read(bytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (randomAccessFile != null) {
+                try {
+                    randomAccessFile.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return bytes;
+    }
+
+    public static void writeFileByte(String filePath, Long num, byte[] bytes) {
+        RandomAccessFile randomAccessFile = null;
+        try {
+            randomAccessFile = new RandomAccessFile(filePath, "rw");
+            randomAccessFile.seek(num*4096);
+            randomAccessFile.write(bytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (randomAccessFile != null) {
+                try {
+                    randomAccessFile.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 }

@@ -5,6 +5,7 @@ package com.bit.bplustree.mytree;
  * @date 2020/9/10 4:30 下午
  */
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,8 +16,9 @@ public class Node extends AbstractNode {
     /**
      * 子节点
      */
-    protected List<Point> children;
+    protected List<Point> children = new ArrayList<>();
 
+    public Node() {}
 
     public Node(Long parent) {
         super(parent, false);
@@ -25,7 +27,7 @@ public class Node extends AbstractNode {
 
     @Override
     public Long get(Comparable key, BplusTree tree) {
-        for (int i = 0; i <= children.size(); i++) {
+        for (int i = 0; i < children.size(); i++) {
             if (key.compareTo(children.get(i).getKey()) < 0) {
                 AbstractNode node = tree.getNode(children.get(i - 1).getValue());
                 return node.get(key, tree);
@@ -37,7 +39,7 @@ public class Node extends AbstractNode {
     // 从上往下
     @Override
     public void insert(Point newPoint, BplusTree tree) {
-        for (int i = 0; i <= children.size(); i++) {
+        for (int i = 0; i < children.size(); i++) {
             if (newPoint.getKey().compareTo(children.get(i).getKey()) < 0) {
                 AbstractNode node = tree.getNode(children.get(i - 1).getValue());
                 node.insert(newPoint, tree);
@@ -48,6 +50,10 @@ public class Node extends AbstractNode {
 
     // 从下往上
     public void addPoint(Point newPoint, BplusTree tree) {
+        if (children.size() == 0) {
+            children.add(newPoint);
+            return;
+        }
         for (int i = 0; i < children.size(); i++) {
             Point point = children.get(i);
             if (newPoint.getKey().compareTo(point.getKey()) < 0) {
@@ -56,6 +62,7 @@ public class Node extends AbstractNode {
             }
             if (i == children.size() - 1) {
                 children.add(children.size(), newPoint);
+                break;
             }
         }
         // 分裂
@@ -65,18 +72,27 @@ public class Node extends AbstractNode {
             if (parent == -1L) {
                 Long rootNode = tree.newNode(-1L);
                 Node root = (Node) tree.getNode(rootNode);
-                Long rightNodeNum = tree.newNode(0L);
+                Long rightNodeNum = tree.newNode(rootNode);
                 Node rightNode = (Node) tree.getNode(rightNodeNum);
-                parent = 0L;
-                children = children.subList(0, children.size() / 2);
-                rightNode.setChildren(children.subList(children.size() / 2, children.size()));
-                root.addPoint(new Point(-1, tree.getNum(this)), tree);
+                parent = rootNode;
+                List<Point> subChildren  = new ArrayList<>();
+                subChildren.addAll(children.subList(0, children.size()/2));
+                List<Point> subRightChildren  = new ArrayList<>();
+                subRightChildren.addAll(children.subList(children.size()/2, children.size()));
+                children = subChildren;
+                rightNode.setChildren(subRightChildren);
+                root.addPoint(new Point(-1L, tree.getNum(this)), tree);
                 root.addPoint(new Point(middlePoint.getKey(), rightNodeNum), tree);
                 tree.updateToFile(rightNodeNum);
             } else {
                 Long nodeNum = tree.newNode(parent);
                 Node newNode = (Node) tree.getNode(nodeNum);
-                newNode.setChildren(children.subList(children.size() / 2, children.size()));
+                List<Point> subChildren  = new ArrayList<>();
+                subChildren.addAll(children.subList(0, children.size()/2));
+                List<Point> subNewChildren  = new ArrayList<>();
+                subNewChildren.addAll(children.subList(children.size()/2, children.size()));
+                children = subChildren;
+                newNode.setChildren(subNewChildren);
                 ((Node) tree.getNode(parent)).addPoint(new Point(middlePoint.getKey(), nodeNum), tree);
                 tree.updateToFile(nodeNum);
             }

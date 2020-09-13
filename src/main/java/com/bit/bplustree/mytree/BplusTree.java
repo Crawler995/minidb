@@ -2,10 +2,9 @@ package com.bit.bplustree.mytree;
 
 import com.bit.utils.FileUtil;
 import com.bit.utils.KryoUtil;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,22 +54,18 @@ public class BplusTree {
         // 创建根节点
         if (size == 0) {
             root = new LeafNode(-1L);
-            FileOutputStream fileOutputStream = FileUtil.getFileOutputStream(filePath);
-            Output output = new Output(fileOutputStream);
-            KryoUtil.serialize(root, output);
-            FileUtil.closeOutputSteam(fileOutputStream);
+            byte[] bytes = KryoUtil.serialize(root);
+            FileUtil.writeFileByte(filePath, 0L, bytes);
         } else {
             //读取根节点
-            FileInputStream fileInputStream = FileUtil.getFileInputStream(filePath);
-            Node node = (Node) KryoUtil.deserialize(fileInputStream);
-            FileUtil.closeInputSteam(fileInputStream);
+            byte[] fileByte = FileUtil.getFileByte(filePath, 0L);
+            AbstractNode node = (AbstractNode) KryoUtil.deserialize(fileByte);
             while (node.parent != -1) {
                 node = (Node) getNode(node.parent);
             }
             root = node;
-            nodeCache.put(0L, root);
         }
-
+        nodeCache.put(0L, root);
         head = root;
     }
 
@@ -100,12 +95,10 @@ public class BplusTree {
 
     private void loadAbstractNode(Long num) {
         // 页数
-        FileInputStream fileInputStream = FileUtil.getFileInputStream(filePath);
         AbstractNode node = null;
         try {
-            Input input = new Input(fileInputStream);
-            input.setPosition((int) (num * 4096));
-            node = (AbstractNode) KryoUtil.deserialize(input);
+            byte[] fileByte = FileUtil.getFileByte(filePath, num);
+            node = (AbstractNode) KryoUtil.deserialize(fileByte);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -116,31 +109,22 @@ public class BplusTree {
         File file = new File(filePath);
         long size = file.length();
         // 创建根节点
-        FileOutputStream fileOutputStream = FileUtil.getFileOutputStream(filePath);
-        Output output = new Output(fileOutputStream);
         Node node = new Node(parent);
-        output.setPosition((int) ((size / 4096 + 1) * 4096));
-        KryoUtil.serialize(node, output);
-        return 0L;
+        Long num = size / 4096 + 1;
+        byte[] bytes = KryoUtil.serialize(node);
+        FileUtil.writeFileByte(filePath, num, bytes);
+        return num;
     }
 
     public Long newLeaf(Long parent) {
         File file = new File(filePath);
         long size = file.length();
-        // 创建根节点
-        FileOutputStream fileOutputStream = FileUtil.getFileOutputStream(filePath);
-        try {
-            RandomAccessFile randomAccessFile = new RandomAccessFile(filePath, "w");
-            
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        Output output = new Output(fileOutputStream);
         LeafNode leafNode = new LeafNode(parent);
-        output.setPosition((int) ((size / 4096 + 1) * 4096));
-        KryoUtil.serialize(leafNode, output);
+        Long num = size / 4096 + 1;
+        byte[] bytes = KryoUtil.serialize(leafNode);
+        FileUtil.writeFileByte(filePath, num, bytes);
         nodeCache.put((size / 4096), leafNode);
-        return 0L;
+        return num;
     }
 
     public Long getNum(AbstractNode node) {
@@ -167,11 +151,8 @@ public class BplusTree {
     public void updateToFile(Long num) {
         if (nodeCache.get(num) != null) {
             AbstractNode node = nodeCache.get(num);
-            FileOutputStream fileOutputStream = FileUtil.getFileOutputStream(filePath);
-            Output output = new Output(fileOutputStream);
-            output.setPosition((int) (num*4096));
-            KryoUtil.serialize(node, output);
-            FileUtil.closeOutputSteam(fileOutputStream);
+            byte[] bytes = KryoUtil.serialize(node);
+            FileUtil.writeFileByte(filePath, num, bytes);
         }
     }
 }

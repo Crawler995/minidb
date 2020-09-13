@@ -8,6 +8,8 @@ import lombok.Data;
  */
 public abstract class AbstractNode {
 
+    public AbstractNode() {}
+
     public AbstractNode(Long parent, Boolean isLeaf) {
         this.parent = parent;
         this.isLeaf = isLeaf;

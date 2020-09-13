@@ -1,6 +1,7 @@
 package com.bit.bplustree.mytree;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -25,6 +26,8 @@ public class LeafNode extends AbstractNode {
      */
     protected List<Point> points = new ArrayList<Point>();
     ;
+
+    public LeafNode() {}
 
     public LeafNode(Long parent) {
         super(parent, true);
@@ -92,21 +95,29 @@ public class LeafNode extends AbstractNode {
             if (parent == -1) {
                 Long rootNode = tree.newNode(-1L);
                 Node root = (Node) tree.getNode(rootNode);
-                Long rightNodeNum = tree.newLeaf(0L);
+                Long rightNodeNum = tree.newLeaf(rootNode);
                 LeafNode rightNode = (LeafNode) tree.getNode(rightNodeNum);
-                parent = 0L;
-                points = points.subList(0, points.size() / 2);
-                rightNode.setPoints(points.subList(points.size() / 2, points.size()));
-                root.addPoint(new Point(-1, tree.getNum(this)), tree);
+                parent = rootNode;
+                List<Point> subPoints  = new ArrayList<>();
+                subPoints.addAll(points.subList(0, points.size()/2));
+                List<Point> subRightPoints  = new ArrayList<>();
+                subRightPoints.addAll(points.subList(points.size()/2, points.size()));
+                points = subPoints;
+                rightNode.setPoints(subRightPoints);
+                root.addPoint(new Point(-1L, tree.getNum(this)), tree);
                 root.addPoint(new Point(middlePoint.getKey(), rightNodeNum), tree);
                 tree.updateToFile(rightNodeNum);
             } else {
                 Long leafNum = tree.newLeaf(parent);
                 LeafNode newLeafNode = (LeafNode) tree.getNode(leafNum);
-                newLeafNode.setPoints(points.subList(points.size() / 2, points.size()));
+                List<Point> subPoints  = new ArrayList<>();
+                subPoints.addAll(points.subList(0, points.size()/2));
+                List<Point> subNewPoints  = new ArrayList<>();
+                subNewPoints.addAll(points.subList(points.size()/2, points.size()));
+                newLeafNode.setPoints(subNewPoints);
                 newLeafNode.setNext(next);
                 newLeafNode.setPrev(tree.getNum(this));
-                points = points.subList(0, points.size() / 2);
+                points = subPoints;
                 next = leafNum;
                 Node parentNode = (Node) tree.getNode(parent);
                 parentNode.addPoint(new Point(middlePoint.getKey(), leafNum), tree);
