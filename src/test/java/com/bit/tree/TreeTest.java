@@ -43,7 +43,7 @@ public class TreeTest {
             if (command.equals("get")) {
                 System.out.print("key > ");
                 Long key = Long.valueOf(scanner.nextLine());
-                tree.get(key);
+                System.out.println(tree.get(key));
             }
         }
     }
