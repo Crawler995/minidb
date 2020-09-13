@@ -66,27 +66,26 @@ public class LeafNode extends AbstractNode {
             }
         }
         // 如果一个都没找到返回空值
-        return null;
+        return -1L;
     }
 
     @Override
     public void insert(Point insertPoint, BplusTree tree) {
         if (points.size() == 0) {
             points.add(insertPoint);
-            return;
-        }
-        for (int i = 0; i < points.size(); i++) {
-            if (points.get(i).getKey().compareTo(insertPoint.getKey()) > 0) {
-                points.add(i, insertPoint);
-                break;
+        } else {
+            for (int i = 0; i < points.size(); i++) {
+                if (points.get(i).getKey().compareTo(insertPoint.getKey()) > 0) {
+                    points.add(i, insertPoint);
+                    break;
+                }
+                // 如果所有的都比他小
+                if (i == points.size() - 1) {
+                    points.add(points.size(), insertPoint);
+                    break;
+                }
             }
-            // 如果所有的都比他小
-            if (i == points.size() - 1) {
-                points.add(points.size(), insertPoint);
-                break;
-            }
         }
-
         int leafOrder = tree.getLeafOrder();
         // 如果大于等于阶数 分裂
         if (points.size() >= leafOrder) {

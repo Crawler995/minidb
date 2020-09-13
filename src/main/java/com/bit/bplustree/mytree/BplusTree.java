@@ -56,16 +56,19 @@ public class BplusTree {
             root = new LeafNode(-1L);
             byte[] bytes = KryoUtil.serialize(root);
             FileUtil.writeFileByte(filePath, 0L, bytes);
+            nodeCache.put(0L, root);
         } else {
             //读取根节点
             byte[] fileByte = FileUtil.getFileByte(filePath, 0L);
             AbstractNode node = (AbstractNode) KryoUtil.deserialize(fileByte);
+            nodeCache.put(0L, node);
             while (node.parent != -1) {
-                node = (Node) getNode(node.parent);
+                Long parent = node.parent;
+                node = (Node) getNode(parent);
+                nodeCache.put(parent, node);
             }
             root = node;
         }
-        nodeCache.put(0L, root);
         head = root;
     }
 
@@ -113,6 +116,7 @@ public class BplusTree {
         Long num = size / 4096 + 1;
         byte[] bytes = KryoUtil.serialize(node);
         FileUtil.writeFileByte(filePath, num, bytes);
+        nodeCache.put(num, node);
         return num;
     }
 
@@ -123,7 +127,7 @@ public class BplusTree {
         Long num = size / 4096 + 1;
         byte[] bytes = KryoUtil.serialize(leafNode);
         FileUtil.writeFileByte(filePath, num, bytes);
-        nodeCache.put((size / 4096), leafNode);
+        nodeCache.put(num, leafNode);
         return num;
     }
 

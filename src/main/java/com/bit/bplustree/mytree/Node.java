@@ -16,7 +16,7 @@ public class Node extends AbstractNode {
     /**
      * 子节点
      */
-    protected List<Point> children = new ArrayList<>();
+    protected List<Point> children = new ArrayList<Point>();
 
     public Node() {}
 
@@ -30,6 +30,10 @@ public class Node extends AbstractNode {
         for (int i = 0; i < children.size(); i++) {
             if (key.compareTo(children.get(i).getKey()) < 0) {
                 AbstractNode node = tree.getNode(children.get(i - 1).getValue());
+                return node.get(key, tree);
+            }
+            if (i == children.size()-1) {
+                AbstractNode node = tree.getNode(children.get(i).getValue());
                 return node.get(key, tree);
             }
         }
@@ -52,17 +56,17 @@ public class Node extends AbstractNode {
     public void addPoint(Point newPoint, BplusTree tree) {
         if (children.size() == 0) {
             children.add(newPoint);
-            return;
-        }
-        for (int i = 0; i < children.size(); i++) {
-            Point point = children.get(i);
-            if (newPoint.getKey().compareTo(point.getKey()) < 0) {
-                children.add(i, newPoint);
-                break;
-            }
-            if (i == children.size() - 1) {
-                children.add(children.size(), newPoint);
-                break;
+        } else {
+            for (int i = 0; i < children.size(); i++) {
+                Point point = children.get(i);
+                if (newPoint.getKey().compareTo(point.getKey()) < 0) {
+                    children.add(i, newPoint);
+                    break;
+                }
+                if (i == children.size() - 1) {
+                    children.add(children.size(), newPoint);
+                    break;
+                }
             }
         }
         // 分裂
