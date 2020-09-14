@@ -166,20 +166,38 @@ public class LeafNode extends AbstractNode {
         }
         // 合并
         if (points.size() < (tree.getLeafOrder() + 1) / 2 - 1) {
-            LeafNode leftLeafNode = (LeafNode) tree.getNode(prev);
-            LeafNode rightLeafNode = (LeafNode) tree.getNode(next);
-            if (leftLeafNode.points.size() > ((tree.getLeafOrder() + 1) / 2 - 1)) {
+            if (prev != -1
+                    && ((LeafNode) tree.getNode(prev)).points.size() > ((tree.getLeafOrder() + 1) / 2 - 1)) {
+                LeafNode leftLeafNode = (LeafNode) tree.getNode(prev);
                 Point removePoint = leftLeafNode.points.remove(points.size() - 1);
                 points.add(0, removePoint);
-            } else if (rightLeafNode.points.size() > ((tree.getLeafOrder() + 1) / 2 - 1)) {
+                tree.updateToFile(prev);
+            } else if (next != -1
+                    && ((LeafNode) tree.getNode(next)).points.size() > ((tree.getLeafOrder() + 1) / 2 - 1)) {
+                LeafNode rightLeafNode = (LeafNode) tree.getNode(next);
                 Point removePoint = rightLeafNode.points.remove(points.size() - 1);
                 points.add(removePoint);
+                tree.updateToFile(next);
             } else {
                 // 如果没多余的，则合并
-                leftLeafNode.points.addAll(points);
-                Node parentNode = (Node) tree.getNode(parent);
-                parentNode.deletePoint(tree.getNum(this), tree);
+                if (prev != -1) {
+                    LeafNode leftLeafNode = (LeafNode) tree.getNode(prev);
+                    leftLeafNode.points.addAll(points);
+                    leftLeafNode.next = next;
+                    tree.updateToFile(prev);
+                    Node parentNode = (Node) tree.getNode(parent);
+                    parentNode.deletePoint(tree.getNum(this), tree);
+                } else if (next != -1) {
+                    LeafNode rightLeafNode = (LeafNode) tree.getNode(next);
+                    rightLeafNode.points.addAll(0, points);
+                    rightLeafNode.prev = prev;
+                    tree.updateToFile(next);
+                    Node parentNode = (Node) tree.getNode(parent);
+                    parentNode.deletePoint(tree.getNum(this), tree);
+                }
+
             }
+            tree.updateToFile(tree.getNum(this));
         }
     }
 
@@ -188,6 +206,7 @@ public class LeafNode extends AbstractNode {
         for (Point point : points) {
             if (point.getKey().compareTo(key) == 0 && point.getValue().equals(value)) {
                 point.setValue(newValue);
+                tree.updateToFile(tree.getNum(this));
                 break;
             }
         }

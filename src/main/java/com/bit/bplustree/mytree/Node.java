@@ -134,10 +134,11 @@ public class Node extends AbstractNode {
             return;
         }
         Node parentNode = (Node) tree.getNode(parent);
-        if (!parentNode.getExtraNode(value, tree)) {
-            mergeNode(value, tree);
+        if (!parentNode.getExtraNode(tree.getNum(this), tree)) {
+            parentNode.mergeNode(tree.getNum(this), tree);
             parentNode.deletePoint(tree.getNum(this), tree);
         }
+        tree.updateToFile(tree.getNum(this));
     }
 
     public void updatePoint(Comparable key, Long value, Long newValue, BplusTree tree) {
@@ -162,6 +163,7 @@ public class Node extends AbstractNode {
                         point.key = removePoint.getKey();
                         Node lakeNode = (Node) tree.getNode(value);
                         lakeNode.children.add(0, removePoint);
+                        tree.updateToFile(children.get(i - 1).getValue());
                         return true;
                     }
                 }
@@ -172,6 +174,7 @@ public class Node extends AbstractNode {
                         point.key = rightNode.children.get(0).getKey();
                         Node lakeNode = (Node) tree.getNode(value);
                         lakeNode.children.add(removePoint);
+                        tree.updateToFile(children.get(i - 1).getValue());
                         return true;
                     }
                 }
@@ -186,15 +189,16 @@ public class Node extends AbstractNode {
         for (int i = 0; i < children.size(); i++) {
             Point point = children.get(i);
             if (value.equals(point.getValue())) {
-                // 左兄弟节点有富余
                 if (i > 0) {
                     Node leftNode = (Node) tree.getNode(children.get(i - 1).getValue());
                     leftNode.children.addAll(targetNode.children);
+                    tree.updateToFile(children.get(i - 1).getValue());
                     return;
                 }
                 if (i < children.size() - 1) {
                     Node rightNode = (Node) tree.getNode(children.get(i + 1).getValue());
                     rightNode.children.addAll(0, targetNode.children);
+                    tree.updateToFile(children.get(i + 1).getValue());
                     return;
                 }
                 break;
