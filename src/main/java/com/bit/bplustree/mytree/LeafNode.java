@@ -132,19 +132,42 @@ public class LeafNode extends AbstractNode {
     @Override
     public void delete(Point point, BplusTree tree) {
         for (int i = 0; i < points.size(); i++) {
-//            if (points.get(i).getKey().compareTo(insertPoint.getKey()) == 0) {
-//                points.remove(i);
-//                break;
-//            }
+            if (points.get(i).getKey().compareTo(point.getKey()) == 0
+                    && points.get(i).getValue().equals(point.getValue())) {
+                points.remove(i);
+                break;
+            }
+        }
+        if (parent == -1) {
+            return;
         }
         // 合并
-//        if (points.size() < (tree.getLeafOrder() + 1) / 2 - 1) {
-//            LeafNode leftLeafNode = (LeafNode) tree.getNode(prev);
-//            if (leftLeafNode.points.size() > ((tree.getLeafOrder() + 1) / 2 - 1)) {
-//                Point removePoint = leftLeafNode.points.remove(points.size() - 1);
-//
-//            }
-//        }
+        if (points.size() < (tree.getLeafOrder() + 1) / 2 - 1) {
+            LeafNode leftLeafNode = (LeafNode) tree.getNode(prev);
+            LeafNode rightLeafNode = (LeafNode) tree.getNode(next);
+            if (leftLeafNode.points.size() > ((tree.getLeafOrder() + 1) / 2 - 1)) {
+                Point removePoint = leftLeafNode.points.remove(points.size() - 1);
+                points.add(0, removePoint);
+            } else if (rightLeafNode.points.size() > ((tree.getLeafOrder() + 1) / 2 - 1)) {
+                Point removePoint = rightLeafNode.points.remove(points.size() - 1);
+                points.add(removePoint);
+            } else {
+                // 如果没多余的，则合并
+                leftLeafNode.points.addAll(points);
+                Node parentNode = (Node) tree.getNode(parent);
+                parentNode.deletePoint(tree.getNum(this), tree);
+            }
+        }
+    }
+
+    @Override
+    public void updatePoint(Comparable key, Long value, Long newValue, BplusTree tree) {
+        for (Point point : points) {
+            if (point.getKey().compareTo(key) == 0 && point.getValue().equals(value)) {
+                point.setValue(newValue);
+                break;
+            }
+        }
     }
 
 

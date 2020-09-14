@@ -15,11 +15,11 @@ public class TreeTest {
     public static void main(String[] args) {
         BplusTree tree = null;
         Scanner scanner = new Scanner(System.in);
-        tree = new BplusTree("/tmp/bplus", 4, 4);
-//        tree.insert(new Point(3L, 3L));
-//        tree.insert(new Point(4L, 2L));
-//        tree.insert(new Point(2L, 3L));
-//        tree.insert(new Point(5L, 5L));
+        tree = new BplusTree("/tmp/bplus1", 4, 4);
+        tree.insert(new Point(3L, 3L));
+        tree.insert(new Point(4L, 2L));
+        tree.insert(new Point(2L, 3L));
+        tree.insert(new Point(5L, 5L));
         while (true) {
             System.out.print("db > ");
             //输入命令
@@ -44,6 +44,22 @@ public class TreeTest {
                 System.out.print("key > ");
                 Long key = Long.valueOf(scanner.nextLine());
                 System.out.println(tree.get(key));
+            }
+            if (command.equals("delete")) {
+                System.out.print("key > ");
+                Long key = Long.valueOf(scanner.nextLine());
+                System.out.print("value > ");
+                Long value = Long.valueOf(scanner.nextLine());
+                tree.remove(new Point(key, value));
+            }
+            if (command.equals("update")) {
+                System.out.print("key > ");
+                Long key = Long.valueOf(scanner.nextLine());
+                System.out.print("originValue > ");
+                Long originValue = Long.valueOf(scanner.nextLine());
+                System.out.print("newValue > ");
+                Long newValue = Long.valueOf(scanner.nextLine());
+                tree.update(key, originValue, newValue);
             }
         }
     }

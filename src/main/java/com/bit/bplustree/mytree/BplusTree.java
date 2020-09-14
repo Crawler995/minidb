@@ -144,8 +144,12 @@ public class BplusTree {
         return root.get(key, this);
     }
 
-    public void remove(Comparable key) {
+    public void remove(Point point) {
+        root.delete(point, this);
+    }
 
+    public void update(Comparable key, Long value, Long newValue) {
+        root.updatePoint(key, value, newValue, this);
     }
 
     public void insert(Point point) {

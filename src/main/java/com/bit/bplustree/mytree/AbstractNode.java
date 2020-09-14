@@ -29,6 +29,8 @@ public abstract class AbstractNode {
 
     public abstract void delete(Point point, BplusTree tree);
 
+    public abstract void updatePoint(Comparable key, Long value, Long newValue, BplusTree tree);
+
     public Long getParent() {
         return parent;
     }

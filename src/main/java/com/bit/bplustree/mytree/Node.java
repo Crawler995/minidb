@@ -56,8 +56,13 @@ public class Node extends AbstractNode {
     }
 
     @Override
-    public void delete(Point point, BplusTree tree) {
-
+    public void delete(Point deletePoint, BplusTree tree) {
+        for ( Point point: children) {
+            if (point.getKey().compareTo(deletePoint.getKey()) < 0) {
+                tree.getNode(point.getValue()).delete(deletePoint, tree);
+                break;
+            }
+        }
     }
 
     // 从下往上
@@ -113,32 +118,41 @@ public class Node extends AbstractNode {
         tree.updateToFile(tree.getNum(this));
     }
 
-    public void deletePoint(Comparable key, Long value, BplusTree tree) {
+    public void deletePoint(Long value, BplusTree tree) {
         for (Point point : children) {
-            if (point.getKey().compareTo(key) == 0 && point.getValue().equals(value)) {
+            if (point.getValue().equals(value)) {
                 children.remove(point);
                 break;
             }
         }
-        if (children.size() < (tree.getNodeOrder()+1)/2-1) {
-//            tree.getNode(pa)
+        if (parent == -1) {
+            if (children.size() == 1) {
+                AbstractNode node = tree.getNode(children.get(0).getValue());
+                node.parent = -1L;
+                tree.root = node;
+            }
+            return;
+        }
+        Node parentNode = (Node) tree.getNode(parent);
+        if (!parentNode.getExtraNode(value, tree)) {
+            mergeNode(value, tree);
+            parentNode.deletePoint(tree.getNum(this), tree);
         }
     }
 
     public void updatePoint(Comparable key, Long value, Long newValue, BplusTree tree) {
         for (Point point : children) {
-            if (point.getKey().compareTo(key) == 0 && point.getValue().equals(value)) {
-                children.remove(point);
+            if (point.getKey().compareTo(key) < 0) {
+                tree.getNode(point.getValue()).updatePoint(key, value, newValue, tree);
                 break;
             }
         }
-        addPoint(new Point(key, newValue), tree);
     }
 
-    public Boolean getExtraNode(Comparable key, Long value, BplusTree tree) {
+    public Boolean getExtraNode(Long value, BplusTree tree) {
         for (int i = 0; i < children.size(); i++) {
             Point point = children.get(i);
-            if (key.compareTo(point.getKey()) == 0 && value.equals(point.getValue())) {
+            if (value.equals(point.getValue())) {
                 // 左兄弟节点有富余
                 if (i > 0) {
                     Node leftNode = (Node) tree.getNode(children.get(i - 1).getValue());
@@ -164,6 +178,27 @@ public class Node extends AbstractNode {
             }
         }
         return false;
+    }
+
+    public void mergeNode(Long value, BplusTree tree) {
+        Node targetNode = (Node) tree.getNode(value);
+        for (int i = 0; i < children.size(); i++) {
+            Point point = children.get(i);
+            if (value.equals(point.getValue())) {
+                // 左兄弟节点有富余
+                if (i > 0) {
+                    Node leftNode = (Node) tree.getNode(children.get(i - 1).getValue());
+                    leftNode.children.addAll(targetNode.children);
+                    return;
+                }
+                if (i < children.size()-1) {
+                    Node rightNode = (Node) tree.getNode(children.get(i + 1).getValue());
+                    rightNode.children.addAll(0, targetNode.children);
+                    return;
+                }
+                break;
+            }
+        }
     }
 
     public List<Point> getChildren() {
