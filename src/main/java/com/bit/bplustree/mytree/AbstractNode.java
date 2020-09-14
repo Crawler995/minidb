@@ -27,6 +27,7 @@ public abstract class AbstractNode {
     /** 插入指定的Point */
     public abstract void insert(Point point, BplusTree tree);
 
+    public abstract void delete(Point point, BplusTree tree);
 
     public Long getParent() {
         return parent;

@@ -1,14 +1,15 @@
 package com.bit.bplustree.mytree;
 
+import lombok.Data;
+
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 /**
  * @author aerfafish
  * @date 2020/9/11 1:56 下午
  */
+@Data
 public class LeafNode extends AbstractNode {
 
     /**
@@ -27,7 +28,8 @@ public class LeafNode extends AbstractNode {
     protected List<Point> points = new ArrayList<Point>();
     ;
 
-    public LeafNode() {}
+    public LeafNode() {
+    }
 
     public LeafNode(Long parent) {
         super(parent, true);
@@ -94,13 +96,14 @@ public class LeafNode extends AbstractNode {
             if (parent == -1) {
                 Long rootNode = tree.newNode(-1L);
                 Node root = (Node) tree.getNode(rootNode);
+                tree.root = root;
                 Long rightNodeNum = tree.newLeaf(rootNode);
                 LeafNode rightNode = (LeafNode) tree.getNode(rightNodeNum);
                 parent = rootNode;
-                List<Point> subPoints  = new ArrayList<>();
-                subPoints.addAll(points.subList(0, points.size()/2));
-                List<Point> subRightPoints  = new ArrayList<>();
-                subRightPoints.addAll(points.subList(points.size()/2, points.size()));
+                List<Point> subPoints = new ArrayList<>();
+                subPoints.addAll(points.subList(0, points.size() / 2));
+                List<Point> subRightPoints = new ArrayList<>();
+                subRightPoints.addAll(points.subList(points.size() / 2, points.size()));
                 points = subPoints;
                 rightNode.setPoints(subRightPoints);
                 root.addPoint(new Point(-1L, tree.getNum(this)), tree);
@@ -109,10 +112,10 @@ public class LeafNode extends AbstractNode {
             } else {
                 Long leafNum = tree.newLeaf(parent);
                 LeafNode newLeafNode = (LeafNode) tree.getNode(leafNum);
-                List<Point> subPoints  = new ArrayList<>();
-                subPoints.addAll(points.subList(0, points.size()/2));
-                List<Point> subNewPoints  = new ArrayList<>();
-                subNewPoints.addAll(points.subList(points.size()/2, points.size()));
+                List<Point> subPoints = new ArrayList<>();
+                subPoints.addAll(points.subList(0, points.size() / 2));
+                List<Point> subNewPoints = new ArrayList<>();
+                subNewPoints.addAll(points.subList(points.size() / 2, points.size()));
                 newLeafNode.setPoints(subNewPoints);
                 newLeafNode.setNext(next);
                 newLeafNode.setPrev(tree.getNum(this));
@@ -125,4 +128,24 @@ public class LeafNode extends AbstractNode {
             tree.updateToFile(tree.getNum(this));
         }
     }
+
+    @Override
+    public void delete(Point point, BplusTree tree) {
+        for (int i = 0; i < points.size(); i++) {
+//            if (points.get(i).getKey().compareTo(insertPoint.getKey()) == 0) {
+//                points.remove(i);
+//                break;
+//            }
+        }
+        // 合并
+//        if (points.size() < (tree.getLeafOrder() + 1) / 2 - 1) {
+//            LeafNode leftLeafNode = (LeafNode) tree.getNode(prev);
+//            if (leftLeafNode.points.size() > ((tree.getLeafOrder() + 1) / 2 - 1)) {
+//                Point removePoint = leftLeafNode.points.remove(points.size() - 1);
+//
+//            }
+//        }
+    }
+
+
 }

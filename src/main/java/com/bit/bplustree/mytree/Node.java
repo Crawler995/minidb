@@ -5,12 +5,15 @@ package com.bit.bplustree.mytree;
  * @date 2020/9/10 4:30 下午
  */
 
+import lombok.Data;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * 存在问题 如何通过页号找到页
  */
+@Data
 public class Node extends AbstractNode {
 
     /**
@@ -52,6 +55,11 @@ public class Node extends AbstractNode {
         }
     }
 
+    @Override
+    public void delete(Point point, BplusTree tree) {
+
+    }
+
     // 从下往上
     public void addPoint(Point newPoint, BplusTree tree) {
         if (children.size() == 0) {
@@ -76,6 +84,7 @@ public class Node extends AbstractNode {
             if (parent == -1L) {
                 Long rootNode = tree.newNode(-1L);
                 Node root = (Node) tree.getNode(rootNode);
+                tree.root = root;
                 Long rightNodeNum = tree.newNode(rootNode);
                 Node rightNode = (Node) tree.getNode(rightNodeNum);
                 parent = rootNode;
@@ -102,6 +111,59 @@ public class Node extends AbstractNode {
             }
         }
         tree.updateToFile(tree.getNum(this));
+    }
+
+    public void deletePoint(Comparable key, Long value, BplusTree tree) {
+        for (Point point : children) {
+            if (point.getKey().compareTo(key) == 0 && point.getValue().equals(value)) {
+                children.remove(point);
+                break;
+            }
+        }
+        if (children.size() < (tree.getNodeOrder()+1)/2-1) {
+//            tree.getNode(pa)
+        }
+    }
+
+    public void updatePoint(Comparable key, Long value, Long newValue, BplusTree tree) {
+        for (Point point : children) {
+            if (point.getKey().compareTo(key) == 0 && point.getValue().equals(value)) {
+                children.remove(point);
+                break;
+            }
+        }
+        addPoint(new Point(key, newValue), tree);
+    }
+
+    public Boolean getExtraNode(Comparable key, Long value, BplusTree tree) {
+        for (int i = 0; i < children.size(); i++) {
+            Point point = children.get(i);
+            if (key.compareTo(point.getKey()) == 0 && value.equals(point.getValue())) {
+                // 左兄弟节点有富余
+                if (i > 0) {
+                    Node leftNode = (Node) tree.getNode(children.get(i - 1).getValue());
+                    if (leftNode.children.size() > (tree.getNodeOrder()+1)/2-1) {
+                        Point removePoint = leftNode.children.remove(children.size() - 1);
+                        point.key = removePoint.getKey();
+                        Node lakeNode = (Node) tree.getNode(value);
+                        lakeNode.children.add(0, removePoint);
+                        return true;
+                    }
+                }
+                if (i < children.size()-1) {
+                    Node rightNode = (Node) tree.getNode(children.get(i + 1).getValue());
+                    if (rightNode.children.size() > (tree.getNodeOrder()+1)/2-1) {
+                        Point removePoint = rightNode.children.remove(0);
+                        point.key = rightNode.children.get(0).getKey();
+                        Node lakeNode = (Node) tree.getNode(value);
+                        lakeNode.children.add(removePoint);
+                        return true;
+                    }
+                }
+                break;
+            }
+        }
+        return false;
     }
 
     public List<Point> getChildren() {
