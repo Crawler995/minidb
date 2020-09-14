@@ -3,6 +3,7 @@ package com.bit.bplustree.mytree;
 import lombok.Data;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -15,12 +16,12 @@ public class LeafNode extends AbstractNode {
     /**
      * 叶节点的前节点
      */
-    protected Long prev;
+    protected Long prev = -1L;
 
     /**
      * 叶节点的后节点
      */
-    protected Long next;
+    protected Long next = -1L;
 
     /**
      * 页节点的关键字
@@ -60,15 +61,34 @@ public class LeafNode extends AbstractNode {
     }
 
     @Override
-    public Long get(Comparable key, BplusTree tree) {
-        for (Point point : points) {
-            // 如果找到该值
-            if (point.getKey().compareTo(key) == 0) {
-                return point.getValue();
+    public List<Long> get(Comparable key, BplusTree tree) {
+        List<Long> resultList = new ArrayList<>();
+        LeafNode node = this;
+        boolean flag = false;
+        while (node != null) {
+            for (Point point : node.points) {
+                if (point.getKey().compareTo(key) > 0) {
+                    return resultList;
+                }
+                // 如果找到该值
+                if (point.getKey().compareTo(key) == 0) {
+                    resultList.add(point.getValue());
+                    flag = true;
+                }
+            }
+            // 一个都没找到
+            if (!flag) {
+                return Collections.singletonList(-1L);
+            } else {
+                if (next == -1) {
+                    return resultList;
+                }
+                resultList.addAll(tree.getNode(next).get(key, tree));
+                return resultList;
             }
         }
         // 如果一个都没找到返回空值
-        return -1L;
+        return Collections.singletonList(-1L);
     }
 
     @Override
@@ -100,14 +120,17 @@ public class LeafNode extends AbstractNode {
                 Long rightNodeNum = tree.newLeaf(rootNode);
                 LeafNode rightNode = (LeafNode) tree.getNode(rightNodeNum);
                 parent = rootNode;
+                rightNode.prev = tree.getNum(this);
+                rightNode.next = next;
+                next = rightNodeNum;
                 List<Point> subPoints = new ArrayList<>();
                 subPoints.addAll(points.subList(0, points.size() / 2));
                 List<Point> subRightPoints = new ArrayList<>();
                 subRightPoints.addAll(points.subList(points.size() / 2, points.size()));
                 points = subPoints;
                 rightNode.setPoints(subRightPoints);
-                root.addPoint(new Point(-1L, tree.getNum(this)), tree);
-                root.addPoint(new Point(middlePoint.getKey(), rightNodeNum), tree);
+                root.addPoint(tree.getNum(this), new Point(-1L, tree.getNum(this)), tree);
+                root.addPoint(tree.getNum(this), new Point(middlePoint.getKey(), rightNodeNum), tree);
                 tree.updateToFile(rightNodeNum);
             } else {
                 Long leafNum = tree.newLeaf(parent);
@@ -122,7 +145,7 @@ public class LeafNode extends AbstractNode {
                 points = subPoints;
                 next = leafNum;
                 Node parentNode = (Node) tree.getNode(parent);
-                parentNode.addPoint(new Point(middlePoint.getKey(), leafNum), tree);
+                parentNode.addPoint(tree.getNum(this), new Point(middlePoint.getKey(), leafNum), tree);
                 tree.updateToFile(leafNum);
             }
             tree.updateToFile(tree.getNum(this));
@@ -169,6 +192,5 @@ public class LeafNode extends AbstractNode {
             }
         }
     }
-
 
 }

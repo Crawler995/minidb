@@ -6,6 +6,7 @@ import com.bit.utils.KryoUtil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -140,7 +141,7 @@ public class BplusTree {
         return -1L;
     }
 
-    public Long get(Comparable key) {
+    public List<Long> get(Comparable key) {
         return root.get(key, this);
     }
 

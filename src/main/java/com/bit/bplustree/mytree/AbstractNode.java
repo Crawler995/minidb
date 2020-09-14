@@ -1,6 +1,6 @@
 package com.bit.bplustree.mytree;
 
-import lombok.Data;
+import java.util.List;
 
 /**
  * @author aerfafish
@@ -21,8 +21,9 @@ public abstract class AbstractNode {
     /** 是否是叶子节点 */
     protected Boolean isLeaf;
 
-    /** 根据key获取对应的索引（页号） */
-    public abstract Long get(Comparable key, BplusTree tree);
+    /** 根据key获取对应的索引（页号）
+     * @return*/
+    public abstract List<Long> get(Comparable key, BplusTree tree);
 
     /** 插入指定的Point */
     public abstract void insert(Point point, BplusTree tree);
@@ -38,4 +39,5 @@ public abstract class AbstractNode {
     public void setParent(Long parent) {
         this.parent = parent;
     }
+
 }
