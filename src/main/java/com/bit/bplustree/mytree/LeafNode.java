@@ -95,6 +95,7 @@ public class LeafNode extends AbstractNode {
     public void insert(Point insertPoint, BplusTree tree) {
         if (points.size() == 0) {
             points.add(insertPoint);
+
         } else {
             for (int i = 0; i < points.size(); i++) {
                 if (points.get(i).getKey().compareTo(insertPoint.getKey()) > 0) {
@@ -148,8 +149,8 @@ public class LeafNode extends AbstractNode {
                 parentNode.addPoint(tree.getNum(this), new Point(middlePoint.getKey(), leafNum), tree);
                 tree.updateToFile(leafNum);
             }
-            tree.updateToFile(tree.getNum(this));
         }
+        tree.updateToFile(tree.getNum(this));
     }
 
     @Override
