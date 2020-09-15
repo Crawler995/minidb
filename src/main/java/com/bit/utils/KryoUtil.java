@@ -1,9 +1,9 @@
 package com.bit.utils;
 
-import com.bit.bplustree.mytree.AbstractNode;
-import com.bit.bplustree.mytree.LeafNode;
-import com.bit.bplustree.mytree.Node;
-import com.bit.bplustree.mytree.Point;
+import com.bit.bplustree.AbstractNode;
+import com.bit.bplustree.LeafNode;
+import com.bit.bplustree.Node;
+import com.bit.bplustree.Point;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;

@@ -41,4 +41,4 @@
 ## 参考资料
 
 - [使用C语言从零开始仿造sqlite](https://cstack.github.io/db_tutorial/)
-- [使用C#从零开始编写数据库](https://www.codeproject.com/articles/1029838/build-your-own-database)
+- [使用C#从零开始编写数据库](https://www.codeproject.com/articles/1029838/build-your-own-tableManager)

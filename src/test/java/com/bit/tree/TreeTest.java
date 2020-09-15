@@ -1,8 +1,7 @@
 package com.bit.tree;
 
-import com.bit.bplustree.mytree.BplusTree;
-import com.bit.bplustree.mytree.Point;
-import org.junit.Test;
+import com.bit.bplustree.BplusTree;
+import com.bit.bplustree.Point;
 
 import java.util.Scanner;
 
@@ -16,13 +15,16 @@ public class TreeTest {
         BplusTree tree = null;
         Scanner scanner = new Scanner(System.in);
         tree = new BplusTree("/tmp/bplus1", 4, 4);
-//        tree.insert(new Point(3L, 3L));
-//        tree.insert(new Point(4L, 2L));
-//        tree.insert(new Point(2L, 3L));
-//        tree.insert(new Point(5L, 5L));
-//        tree.insert(new Point(3L, 3L));
-//        tree.insert(new Point(4L, 2L));
-//        tree.insert(new Point(2L, 3L));
+        tree.insert(new Point(1L, 11L));
+        tree.insert(new Point(2L, 22L));
+        tree.insert(new Point(3L, 33L));
+        tree.insert(new Point(4L, 44L));
+        tree.insert(new Point(5L, 55L));
+        tree.insert(new Point(6L, 66L));
+        tree.insert(new Point(7L, 77L));
+        tree.insert(new Point(8L, 88L));
+        tree.insert(new Point(9L, 99L));
+        tree.insert(new Point(10L, 1010L));
 //        tree.insert(new Point(5L, 5L));
 //        tree.insert(new Point(3L, 3L));
 //        tree.insert(new Point(4L, 2L));

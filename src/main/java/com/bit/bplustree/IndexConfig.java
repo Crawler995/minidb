@@ -1,4 +1,4 @@
-package com.bit.bplustree.mytree;
+package com.bit.bplustree;
 
 import lombok.Data;
 

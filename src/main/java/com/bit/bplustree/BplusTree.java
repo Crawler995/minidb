@@ -1,95 +1,166 @@
 package com.bit.bplustree;
 
+import com.bit.utils.FileUtil;
+import com.bit.utils.KryoUtil;
 
-import java.util.Random;
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author aerfafish
- * @date 2020/9/7 7:00 下午
+ * @date 2020/9/10 5:53 下午
  */
-public class BplusTree implements B {
+public class BplusTree {
 
-    /** 根节点 */
-    protected Node root;
 
-    /** 阶数，M值 */
-    protected int order;
+    private String filePath = "/tmp/bPlus";
 
-    /** 叶子节点的链表头*/
-    protected Node head;
+    /**
+     * 根节点
+     */
+    protected AbstractNode root;
 
-    public Node getHead() {
-        return head;
-    }
+    /**
+     * 阶数，M值
+     */
+    protected int nodeOrder = 4;
 
-    public void setHead(Node head) {
-        this.head = head;
-    }
+    /**
+     * 叶子结点储存的索引的个数
+     */
+    protected int leafOrder = 4;
 
-    public Node getRoot() {
-        return root;
-    }
+    /**
+     * 叶子节点的链表头
+     */
+    protected AbstractNode head;
 
-    public void setRoot(Node root) {
-        this.root = root;
-    }
+    protected Map<Long, AbstractNode> nodeCache = new HashMap<>();
 
-    public int getOrder() {
-        return order;
-    }
 
-    public void setOrder(int order) {
-        this.order = order;
-    }
-
-    @Override
-    public Object get(Comparable key) {
-        return root.get(key);
-    }
-
-    @Override
-    public void remove(Comparable key) {
-        root.remove(key, this);
-
-    }
-
-    @Override
-    public void insertOrUpdate(Comparable key, Long value) {
-        root.insertOrUpdate(key, value, this);
-
-    }
-
-    public BplusTree(int order){
-        if (order < 3) {
+    public BplusTree(String filePath, int nodeOrder, int leafOrder) {
+        if (nodeOrder < 3 || leafOrder < 3) {
             System.out.print("order must be greater than 2");
             System.exit(0);
         }
-        this.order = order;
-        root = new Node(true, true);
+        this.filePath = filePath;
+        this.nodeOrder = nodeOrder;
+        this.leafOrder = leafOrder;
+
+        File file = new File(filePath);
+        long size = file.length();
+        // 创建根节点
+        if (size == 0) {
+            root = new LeafNode(-1L);
+            byte[] bytes = KryoUtil.serialize(root);
+            FileUtil.writeFileByte(filePath, 0L, bytes);
+            nodeCache.put(0L, root);
+        } else {
+            //读取根节点
+            byte[] fileByte = FileUtil.getFileByte(filePath, 0L);
+            AbstractNode node = (AbstractNode) KryoUtil.deserialize(fileByte);
+            nodeCache.put(0L, node);
+            while (node.parent != -1) {
+                Long parent = node.parent;
+                node = (Node) getNode(parent);
+                nodeCache.put(parent, node);
+            }
+            root = node;
+        }
         head = root;
     }
 
-    //测试
-    public static void main(String[] args) {
-        BplusTree tree = new BplusTree(6);
-        Random random = new Random();
-        long current = System.currentTimeMillis();
-        for (int j = 0; j < 100000; j++) {
-            for (int i = 0; i < 100; i++) {
-                long randomNumber = random.nextInt(1000);
-                tree.insertOrUpdate(randomNumber, randomNumber);
-            }
-
-            for (int i = 0; i < 100; i++) {
-                int randomNumber = random.nextInt(1000);
-                tree.remove(randomNumber);
-            }
-        }
-
-        long duration = System.currentTimeMillis() - current;
-        System.out.println("time elpsed for duration: " + duration);
-        int search = 80;
-        System.out.print(tree.get(search));
+    public int getNodeOrder() {
+        return nodeOrder;
     }
 
+    public void setNodeOrder(int nodeOrder) {
+        this.nodeOrder = nodeOrder;
+    }
+
+    public int getLeafOrder() {
+        return leafOrder;
+    }
+
+    public void setLeafOrder(int leafOrder) {
+        this.leafOrder = leafOrder;
+    }
+
+    public AbstractNode getNode(Long num) {
+        if (nodeCache.get(num) == null) {
+            loadAbstractNode(num);
+        }
+        AbstractNode node = nodeCache.get(num);
+        return node;
+    }
+
+    private void loadAbstractNode(Long num) {
+        // 页数
+        AbstractNode node = null;
+        try {
+            byte[] fileByte = FileUtil.getFileByte(filePath, num);
+            node = (AbstractNode) KryoUtil.deserialize(fileByte);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        nodeCache.put(num, node);
+    }
+
+    public Long newNode(Long parent) {
+        File file = new File(filePath);
+        long size = file.length();
+        // 创建根节点
+        Node node = new Node(parent);
+        Long num = size / 4096 + 1;
+        byte[] bytes = KryoUtil.serialize(node);
+        FileUtil.writeFileByte(filePath, num, bytes);
+        nodeCache.put(num, node);
+        return num;
+    }
+
+    public Long newLeaf(Long parent) {
+        File file = new File(filePath);
+        long size = file.length();
+        LeafNode leafNode = new LeafNode(parent);
+        Long num = size / 4096 + 1;
+        byte[] bytes = KryoUtil.serialize(leafNode);
+        FileUtil.writeFileByte(filePath, num, bytes);
+        nodeCache.put(num, leafNode);
+        return num;
+    }
+
+    public Long getNum(AbstractNode node) {
+        for (Map.Entry<Long, AbstractNode> entry : nodeCache.entrySet()) {
+            if (entry.getValue() == node) {
+                return entry.getKey();
+            }
+        }
+        return -1L;
+    }
+
+    public List<Long> get(Comparable key) {
+        return root.get(key, this);
+    }
+
+    public void remove(Point point) {
+        root.delete(point, this);
+    }
+
+    public void update(Comparable key, Long value, Long newValue) {
+        root.updatePoint(key, value, newValue, this);
+    }
+
+    public void insert(Point point) {
+        root.insert(point, this);
+    }
+
+    public void updateToFile(Long num) {
+        if (nodeCache.get(num) != null) {
+            AbstractNode node = nodeCache.get(num);
+            byte[] bytes = KryoUtil.serialize(node);
+            FileUtil.writeFileByte(filePath, num, bytes);
+        }
+    }
 }

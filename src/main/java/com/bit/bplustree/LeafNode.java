@@ -1,4 +1,4 @@
-package com.bit.bplustree.mytree;
+package com.bit.bplustree;
 
 import lombok.Data;
 
@@ -76,16 +76,11 @@ public class LeafNode extends AbstractNode {
                     flag = true;
                 }
             }
-            // 一个都没找到
-            if (!flag) {
-                return Collections.singletonList(-1L);
-            } else {
-                if (next == -1) {
-                    return resultList;
-                }
-                resultList.addAll(tree.getNode(next).get(key, tree));
+            if (next == -1) {
                 return resultList;
             }
+            resultList.addAll(tree.getNode(next).get(key, tree));
+            return resultList;
         }
         // 如果一个都没找到返回空值
         return Collections.singletonList(-1L);

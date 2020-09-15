@@ -10,6 +10,10 @@ public class FileUtil {
 
     public static FileInputStream getFileInputStream(String path) {
         try {
+            File file = new File(path);
+            if (!file.exists()) {
+                file.mkdir();
+            }
             return new FileInputStream(path);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -29,6 +33,8 @@ public class FileUtil {
 
     public static FileOutputStream getFileOutputStream(String path) {
         try {
+            File file = new File(path);
+            file.mkdir();
             return new FileOutputStream(path);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -83,6 +89,17 @@ public class FileUtil {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+
+    public static void writeFileByte(FileOutputStream fileOutputStream, byte[] bytes) {
+        if (fileOutputStream == null) {
+            return;
+        }
+        try {
+            fileOutputStream.write(bytes);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
