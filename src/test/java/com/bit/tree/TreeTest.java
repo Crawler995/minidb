@@ -15,6 +15,7 @@ public class TreeTest {
         BplusTree tree = null;
         Scanner scanner = new Scanner(System.in);
 <<<<<<< HEAD
+<<<<<<< HEAD
 //        tree = new BplusTree("/tmp/bplus1", 4, 4);
 //        tree.insert(new Point(1L, 11L));
 //        tree.insert(new Point(2L, 22L));
@@ -27,6 +28,8 @@ public class TreeTest {
 //        tree.insert(new Point(9L, 99L));
 //        tree.insert(new Point(10L, 1010L));
 =======
+=======
+>>>>>>> master
         tree = new BplusTree("/tmp/bplus1", 4, 4);
         tree.insert(new Point(1L, 11L));
         tree.insert(new Point(2L, 22L));
@@ -41,6 +44,9 @@ public class TreeTest {
         tree.insert(new Point(11L, 11L));
         tree.insert(new Point(12L, 12L));
         tree.insert(new Point(13L, 13L));
+<<<<<<< HEAD
+>>>>>>> master
+=======
 >>>>>>> master
 //        tree.insert(new Point(5L, 5L));
 //        tree.insert(new Point(3L, 3L));
