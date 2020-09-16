@@ -46,7 +46,8 @@ def __delete_existed_minidb_files():
     删除config中定义的minidb_files。
     """
     for minidb_file in minidb_files:
-        os.remove(minidb_file)
+        if os.path.exists(minidb_file):
+            os.remove(minidb_file)
 
 def run_commands_in_minidb(commands, delete_minidb_files_before_run=True):
     """
