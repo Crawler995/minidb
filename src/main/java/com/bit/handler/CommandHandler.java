@@ -8,6 +8,9 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.RuleNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author aerfafish
  * @date 2020/9/7 3:38 下午
@@ -37,14 +40,23 @@ public class CommandHandler {
         /**
          * 增加其他处理
          */
-        CharStream stream = CharStreams.fromString(command.toUpperCase());
-        MySqlLexer lexer = new MySqlLexer(stream);
-        CommonTokenStream token = new CommonTokenStream(lexer);
-        MySqlParser parser = new MySqlParser(token);
-        ParseTree tree = parser.root();
 
-        //MySqlParserVisitor mySqlParserVisitor = new MySqlParserBaseVisitor();
-        //mySqlParserVisitor.visit(tree);
 
+        List<CommandContent> commandContents = new ArrayList<>();
+
+        CharStream stream = CharStreams.fromString(command.toUpperCase()); // 将命令读入字节符号流
+        MySqlLexer lexer = new MySqlLexer(stream);//新建一个词法分析器，处理输入的字节流
+        CommonTokenStream token = new CommonTokenStream(lexer);//新建一个词法符号的缓冲区，用于存储词法分析器将生成的词法符号
+        MySqlParser parser = new MySqlParser(token);//新建一个语法分析器，处理词法符号缓冲区的内容
+        ParseTree tree = parser.root();//针对root规则，开始语法分析，生成一颗树
+
+        SqlCommandVisitor sqlCommandVisitor = new SqlCommandVisitor(commandContents);
+        sqlCommandVisitor.visit(tree);
+
+        CommandContent content =  commandContents.get(0);
+
+        /**
+         * analyse commandContents here
+         */
     }
 }
