@@ -12,7 +12,7 @@ public enum DataType {
     DOUBLE,
     ERROR;
 
-    public DataType valueOf(int index) {
+    public static DataType valueOf(int index) {
         switch (index) {
             case 0:
                 return INT;
