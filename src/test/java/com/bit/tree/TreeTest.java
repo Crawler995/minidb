@@ -14,40 +14,7 @@ public class TreeTest {
     public static void main(String[] args) {
         BplusTree tree = null;
         Scanner scanner = new Scanner(System.in);
-<<<<<<< HEAD
-<<<<<<< HEAD
-//        tree = new BplusTree("/tmp/bplus1", 4, 4);
-//        tree.insert(new Point(1L, 11L));
-//        tree.insert(new Point(2L, 22L));
-//        tree.insert(new Point(3L, 33L));
-//        tree.insert(new Point(4L, 44L));
-//        tree.insert(new Point(5L, 55L));
-//        tree.insert(new Point(6L, 66L));
-//        tree.insert(new Point(7L, 77L));
-//        tree.insert(new Point(8L, 88L));
-//        tree.insert(new Point(9L, 99L));
-//        tree.insert(new Point(10L, 1010L));
-=======
-=======
->>>>>>> master
-        tree = new BplusTree("/tmp/bplus1", 4, 4);
-        tree.insert(new Point(1L, 11L));
-        tree.insert(new Point(2L, 22L));
-        tree.insert(new Point(3L, 33L));
-        tree.insert(new Point(4L, 44L));
-        tree.insert(new Point(5L, 55L));
-        tree.insert(new Point(6L, 66L));
-        tree.insert(new Point(7L, 77L));
-        tree.insert(new Point(8L, 88L));
-        tree.insert(new Point(9L, 99L));
-        tree.insert(new Point(10L, 10L));
-        tree.insert(new Point(11L, 11L));
-        tree.insert(new Point(12L, 12L));
-        tree.insert(new Point(13L, 13L));
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> master
+
 //        tree.insert(new Point(5L, 5L));
 //        tree.insert(new Point(3L, 3L));
 //        tree.insert(new Point(4L, 2L));
