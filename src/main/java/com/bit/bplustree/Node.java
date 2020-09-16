@@ -97,6 +97,9 @@ public class Node extends AbstractNode {
                 subChildren.addAll(children.subList(0, children.size() / 2));
                 List<Point> subRightChildren = new ArrayList<>();
                 subRightChildren.addAll(children.subList(children.size() / 2, children.size()));
+                for (Point point : subRightChildren) {
+                    tree.getNode(point.getValue()).parent = rightNodeNum;
+                }
                 children = subChildren;
                 rightNode.setChildren(subRightChildren);
                 root.addPoint(tree.getNum(this), new Point(-1L, tree.getNum(this)), tree);
@@ -110,6 +113,9 @@ public class Node extends AbstractNode {
                 List<Point> subNewChildren = new ArrayList<>();
                 subNewChildren.addAll(children.subList(children.size() / 2, children.size()));
                 children = subChildren;
+                for (Point point : subNewChildren) {
+                    tree.getNode(point.getValue()).parent = nodeNum;
+                }
                 newNode.setChildren(subNewChildren);
                 ((Node) tree.getNode(parent)).addPoint(tree.getNum(this), new Point(middlePoint.getKey(), nodeNum), tree);
                 tree.updateToFile(nodeNum);

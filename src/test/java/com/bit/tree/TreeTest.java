@@ -24,7 +24,10 @@ public class TreeTest {
         tree.insert(new Point(7L, 77L));
         tree.insert(new Point(8L, 88L));
         tree.insert(new Point(9L, 99L));
-        tree.insert(new Point(10L, 1010L));
+        tree.insert(new Point(10L, 10L));
+        tree.insert(new Point(11L, 11L));
+        tree.insert(new Point(12L, 12L));
+        tree.insert(new Point(13L, 13L));
 //        tree.insert(new Point(5L, 5L));
 //        tree.insert(new Point(3L, 3L));
 //        tree.insert(new Point(4L, 2L));
