@@ -41,6 +41,25 @@ class BplussTreeTest(unittest.TestCase):
 
         self.assertListEqual(real_output, expected_output)
 
+    def test_insert_and_get_2(self):
+        n = 13
+        test_commands = []
+        for i in range(1, n + 1):
+            test_commands.append('insert')
+            test_commands.append(str(i))
+            test_commands.append(str(i) + str(i))
+        for i in range(1, n + 1):
+            test_commands.append('get')
+            test_commands.append(str(i))
+
+        expected_output = []
+        for i in range(1, n + 1):
+            expected_output.append('[%d%d]' % (i, i))
+
+        real_output = run_commands_in_minidb(test_commands)
+        
+        self.assertListEqual(real_output, expected_output)
+
 
 if __name__ == "__main__":
     unittest.main()
