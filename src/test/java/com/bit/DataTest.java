@@ -9,6 +9,8 @@ import com.bit.constance.DataType;
 import com.bit.exception.SameNameDatabaseException;
 import com.bit.exception.SameNameTableException;
 import com.bit.model.*;
+import com.bit.utils.FileUtil;
+import com.bit.utils.PathUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,7 +73,7 @@ public class DataTest {
                     columnInfos.add(columnInfo);
                 }
                 table.setColumnInfo(columnInfos);
-                table.setFilePath("/tmp/table/"+tableName);
+                table.setFilePath(PathUtil.getSystemAdaptedPath("/tmp/table/"+tableName));
                 try {
                     tableManager.createTable(table);
                 } catch (SameNameTableException e) {
