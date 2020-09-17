@@ -67,6 +67,9 @@ public class FileUtil {
         RandomAccessFile randomAccessFile = null;
         byte[] bytes = new byte[Math.toIntExact(pageSize)];
         try {
+            if (!new File(filePath).exists()) {
+                FileUtil.createNewFile(filePath);
+            }
             randomAccessFile = new RandomAccessFile(filePath, "r");
             randomAccessFile.seek(num * pageSize);
             randomAccessFile.read(bytes);

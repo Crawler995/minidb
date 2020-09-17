@@ -51,9 +51,10 @@ public class DatabaseManager {
         if (filePath == null) {
             filePath = DBConfig.DATABASE_POSITION+"/"+database.getDatabaseName();
         }
+        database.setFilePath(filePath);
         TableManager tableManager = new TableManager(filePath);
         databaseCache.put(database.getDatabaseName(), tableManager);
-        databaseInfo.getDatabases().add(new Database(database.getDatabaseName(), filePath));
+        databaseInfo.getDatabases().add(database);
         storeToFile();
     }
 
@@ -64,6 +65,9 @@ public class DatabaseManager {
             throw new NoNameDatabaseException("不存在该数据库，无法修改");
         }
         // 修改全局储存文件中的数据库名
+        if (newDatabase.getFilePath() == null) {
+            newDatabase.setFilePath(database.getFilePath());
+        }
         databaseInfo.getDatabases().add(newDatabase);
         TableManager tableManager = databaseCache.remove(originDatabase.getDatabaseName());
         databaseCache.put(newDatabase.getDatabaseName(), tableManager);
@@ -76,6 +80,7 @@ public class DatabaseManager {
         if (database == null) {
             throw new NoNameDatabaseException("不存在该数据库，无法删除");
         }
+        // todo:删除数据库中的表和数据
         String filePath = database.getFilePath();
         File file = new File(filePath);
         if (file.exists()) {

@@ -70,6 +70,7 @@ public class TableManager {
         if (table == null) {
             throw new NoNameTableException("不存在该表，无法删除");
         }
+        // todo: 删除数据
         String filePath = table.getFilePath();
         File file = new File(filePath);
         if (file.exists()) {

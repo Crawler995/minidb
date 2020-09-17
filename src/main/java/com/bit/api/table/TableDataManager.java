@@ -62,25 +62,32 @@ public class TableDataManager {
             Long length = new File(dataFilePath).length();
             for (int i = 0; i <= length/(1024*1024); i++) {
                 byte[] bytes = FileUtil.getFileByte(dataFilePath, (long) i, 1024 * 1024);
-                List<TableData> tableDataList = new ArrayList<>();
+                Input input = new Input(bytes);
+                List<TableData> tableDataList = new LinkedList<>();
                 try {
                     while (true) {
-                        Input input = new Input(bytes);
                         TableData tableData = (TableData) KryoUtil.deserialize(input);
+                        if (tableData == null) {
+                            break;
+                        }
                         tableDataList.add(tableData);
                     }
                 } catch (Exception ignored){
                 }
                 Boolean flag = false;
-                for (TableData tableData : tableDataList) {
+                Iterator<TableData> iterator = tableDataList.iterator();
+                while (iterator.hasNext()){
+                    TableData tableData = iterator.next();
                     if (compare(tableData, deleteTableData)) {
-                        tableDataList.remove(tableData);
+                        iterator.remove();
                         flag = true;
                     }
                 }
+
                 if (flag) {
                     byte[] newBytes = KryoUtil.serialize(tableDataList);
-                    FileUtil.writeFileByte(dataFilePath, (long) i, newBytes, 1024*1024);
+                    byte[] writeByte = Arrays.copyOf(newBytes, 1024*1024);
+                    FileUtil.writeFileByte(dataFilePath, (long) i, writeByte, 1024*1024);
                 }
             }
         }
@@ -89,7 +96,7 @@ public class TableDataManager {
     public List<TableData> select(TableData selectTableData) {
         Long pageNum = 0L;
         String indexName = getIndex(selectTableData);
-        List<TableData> selectTableDataList = new ArrayList<>();
+        List<TableData> selectTableDataList = new LinkedList<>();
         if (indexName != null) {
             //通过索引获取页号
         } else {
@@ -97,7 +104,7 @@ public class TableDataManager {
             for (int i = 0; i <= length/(1024*1024); i++) {
                 byte[] bytes = FileUtil.getFileByte(dataFilePath, (long) i, 1024 * 1024);
                 Input input = new Input(bytes);
-                List<TableData> tableDataList = new ArrayList<>();
+                List<TableData> tableDataList = new LinkedList<>();
                 try {
                     while (true) {
                         TableData tableData = (TableData) KryoUtil.deserialize(input);
@@ -127,10 +134,10 @@ public class TableDataManager {
             Long length = new File(dataFilePath).length();
             for (int i = 0; i <= length/(1024*1024); i++) {
                 byte[] bytes = FileUtil.getFileByte(dataFilePath, (long) i, 1024 * 1024);
-                List<TableData> tableDataList = new ArrayList<>();
+                Input input = new Input(bytes);
+                List<TableData> tableDataList = new LinkedList<>();
                 try {
                     while (true) {
-                        Input input = new Input(bytes);
                         TableData tableData = (TableData) KryoUtil.deserialize(input);
                         if (tableData == null) {
                             break;
@@ -144,6 +151,9 @@ public class TableDataManager {
                         updateTableData(tableData, updateTableData);
                     }
                 }
+                byte[] newBytes = KryoUtil.serialize(tableDataList);
+                byte[] writeByte = Arrays.copyOf(newBytes, 1024*1024);
+                FileUtil.writeFileByte(dataFilePath, (long) i, writeByte, 1024*1024);
             }
         }
     }

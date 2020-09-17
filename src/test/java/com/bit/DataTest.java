@@ -5,6 +5,8 @@ import com.bit.api.table.TableDataManager;
 import com.bit.api.table.TableManager;
 import com.bit.bplustree.BplusTree;
 import com.bit.constance.DataType;
+import com.bit.exception.NoNameDatabaseException;
+import com.bit.exception.NoNameTableException;
 import com.bit.exception.SameNameDatabaseException;
 import com.bit.exception.SameNameTableException;
 import com.bit.model.ColumnInfo;
@@ -134,6 +136,11 @@ public class DataTest {
                     break;
                 }
                 TableData tableData = new TableData();
+                Table table = tableDataManager.getTable();
+                if (table == null) {
+                    System.out.println("不存在该表");
+                    break;
+                }
                 while (true) {
                     System.out.print("columnName > ");
                     String columnName = scanner.nextLine();
@@ -142,11 +149,6 @@ public class DataTest {
                     }
                     System.out.print("value > ");
                     String value = scanner.nextLine();
-                    Table table = tableDataManager.getTable();
-                    if (table == null) {
-                        System.out.println("不存在该表");
-                        break;
-                    }
                     for (ColumnInfo columnInfo : table.getColumnInfo()) {
                         if (columnInfo.getColumnName().equals(columnName)) {
                             if (columnInfo.getType() == DataType.LONG) {
@@ -173,6 +175,164 @@ public class DataTest {
                 String databaseName = scanner.nextLine();
                 TableManager tableManager = DatabaseManager.getInstance().getTableManager(databaseName);
                 System.out.println(tableManager.getTables());
+            }
+
+            if (command.equals("update database")) {
+                System.out.print("database > ");
+                String databaseName = scanner.nextLine();
+                Database originDatabase = new Database();
+                originDatabase.setDatabaseName(databaseName);
+                System.out.print("new database > ");
+                String newDatabaseName = scanner.nextLine();
+                Database newDatabase = new Database();
+                newDatabase.setDatabaseName(newDatabaseName);
+                System.out.print("new database filePath > ");
+                String filePath = scanner.nextLine();
+                if (!filePath.equals("exit")) {
+                    newDatabase.setFilePath(filePath);
+                }
+                try {
+                    DatabaseManager.getInstance().updateDatabase(originDatabase, newDatabase);
+                } catch (NoNameDatabaseException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (command.equals("delete database")) {
+                System.out.print("database > ");
+                String databaseName = scanner.nextLine();
+                try {
+                    DatabaseManager.getInstance().deleteDatabase(databaseName);
+                } catch (NoNameDatabaseException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (command.equals("delete table")) {
+                System.out.print("database > ");
+                String databaseName = scanner.nextLine();
+                TableManager tableManager = DatabaseManager.getInstance().getTableManager(databaseName);
+                System.out.print("table > ");
+                String tableName = scanner.nextLine();
+                try {
+                    tableManager.deleteTable(tableName);
+                } catch (NoNameTableException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (command.equals("delete data")) {
+                System.out.print("database > ");
+                String databaseName = scanner.nextLine();
+                TableManager tableManager = DatabaseManager.getInstance().getTableManager(databaseName);
+                System.out.print("table > ");
+                String tableName = scanner.nextLine();
+                TableDataManager tableDataManager = tableManager.getTableDataManager(tableName);
+                Table table = tableDataManager.getTable();
+                if (table == null) {
+                    System.out.println("不存在该表");
+                    break;
+                }
+                TableData tableData = new TableData();
+                while (true) {
+                    System.out.print("columnName > ");
+                    String columnName = scanner.nextLine();
+                    if (columnName.equals("exit")) {
+                        break;
+                    }
+                    System.out.print("value > ");
+                    String value = scanner.nextLine();
+                    for (ColumnInfo columnInfo : table.getColumnInfo()) {
+                        if (columnInfo.getColumnName().equals(columnName)) {
+                            if (columnInfo.getType() == DataType.LONG) {
+                                Long columnLongValue = Long.parseLong(value);
+                                tableData.getData().put(columnName, columnLongValue);
+                                break;
+                            }
+                            if (columnInfo.getType() == DataType.DOUBLE) {
+                                Double columnDoubleValue = Double.parseDouble(value);
+                                tableData.getData().put(columnName, columnDoubleValue);
+                                break;
+                            }
+                            if (columnInfo.getType() == DataType.STRING) {
+                                tableData.getData().put(columnName, value);
+                                break;
+                            }
+                        }
+                    }
+                }
+                tableDataManager.delete(tableData);
+            }
+
+            if (command.equals("update data")) {
+                System.out.print("database > ");
+                String databaseName = scanner.nextLine();
+                TableManager tableManager = DatabaseManager.getInstance().getTableManager(databaseName);
+                System.out.print("table > ");
+                String tableName = scanner.nextLine();
+                TableDataManager tableDataManager = tableManager.getTableDataManager(tableName);
+                Table table = tableDataManager.getTable();
+                if (table == null) {
+                    System.out.println("不存在该表");
+                    break;
+                }
+                TableData originData = new TableData();
+                while (true) {
+                    System.out.print("columnName > ");
+                    String columnName = scanner.nextLine();
+                    if (columnName.equals("exit")) {
+                        break;
+                    }
+                    System.out.print("value > ");
+                    String value = scanner.nextLine();
+                    for (ColumnInfo columnInfo : table.getColumnInfo()) {
+                        if (columnInfo.getColumnName().equals(columnName)) {
+                            if (columnInfo.getType() == DataType.LONG) {
+                                Long columnLongValue = Long.parseLong(value);
+                                originData.getData().put(columnName, columnLongValue);
+                                break;
+                            }
+                            if (columnInfo.getType() == DataType.DOUBLE) {
+                                Double columnDoubleValue = Double.parseDouble(value);
+                                originData.getData().put(columnName, columnDoubleValue);
+                                break;
+                            }
+                            if (columnInfo.getType() == DataType.STRING) {
+                                originData.getData().put(columnName, value);
+                                break;
+                            }
+                        }
+                    }
+                }
+                TableData newData = new TableData();
+                while (true) {
+                    System.out.print("columnName > ");
+                    String columnName = scanner.nextLine();
+                    if (columnName.equals("exit")) {
+                        break;
+                    }
+                    System.out.print("value > ");
+                    String value = scanner.nextLine();
+                    for (ColumnInfo columnInfo : table.getColumnInfo()) {
+                        if (columnInfo.getColumnName().equals(columnName)) {
+                            if (columnInfo.getType() == DataType.LONG) {
+                                Long columnLongValue = Long.parseLong(value);
+                                newData.getData().put(columnName, columnLongValue);
+                                break;
+                            }
+                            if (columnInfo.getType() == DataType.DOUBLE) {
+                                Double columnDoubleValue = Double.parseDouble(value);
+                                newData.getData().put(columnName, columnDoubleValue);
+                                break;
+                            }
+                            if (columnInfo.getType() == DataType.STRING) {
+                                newData.getData().put(columnName, value);
+                                break;
+                            }
+                        }
+                    }
+                }
+                tableDataManager.update(originData, newData);
             }
         }
     }
