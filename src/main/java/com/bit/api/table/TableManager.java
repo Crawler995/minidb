@@ -3,6 +3,7 @@ package com.bit.api.table;
 import com.bit.constance.DBConfig;
 import com.bit.exception.NoNameTableException;
 import com.bit.exception.SameNameTableException;
+import com.bit.model.Database;
 import com.bit.model.Table;
 import com.bit.model.TableInfo;
 import com.bit.utils.FileUtil;
@@ -35,6 +36,19 @@ public class TableManager {
 
     TableInfo tableInfo = null;
 
+    public TableDataManager getTableDataManager(String tableName) {
+        TableDataManager tableDataManager = tableCache.get(tableName);
+        if (tableDataManager == null) {
+            for (Table table : tableInfo.getTables()) {
+                if (table.getTableName().equals(tableName)) {
+                    tableDataManager = new TableDataManager(table);
+                    tableCache.put(tableName, tableDataManager);
+                }
+            }
+        }
+        return tableDataManager;
+    }
+
     public void createTable(Table table) throws SameNameTableException {
         if (containTable(table.getTableName())) {
             throw new SameNameTableException("已经有对应表，无法创建");
@@ -43,6 +57,9 @@ public class TableManager {
         if (filePath == null) {
             filePath = DBConfig.TABLE_POSITION+"/"+table.getTableName();
         }
+        TableDataManager tableDataManager = new TableDataManager(table);
+        tableCache.put(table.getTableName(), tableDataManager);
+        tableInfo.getTables().add(table);
         // 创建ColumnManager
         storeToFile();
     }
@@ -126,15 +143,15 @@ public class TableManager {
     private void initTableInfo() {
         File file = new File(tableInfoPath);
         if (!file.exists() || file.length() == 0) {
-            file.mkdir();
-            return;
+            FileUtil.createNewFile(tableInfoPath);
         }
         // 读取该数据库中数据
         FileInputStream fileInputStream = FileUtil.getFileInputStream(tableInfoPath);
         try {
             tableInfo = (TableInfo) KryoUtil.deserialize(fileInputStream);
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
+            tableInfo = new TableInfo();
         }
     }
 }

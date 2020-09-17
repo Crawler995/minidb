@@ -104,6 +104,19 @@ public class DatabaseManager {
         FileUtil.closeOutputSteam(fileOutputStream);
     }
 
+    public TableManager getTableManager(String databaseName) {
+        TableManager tableManager = databaseCache.get(databaseName);
+        if (tableManager == null) {
+            for (Database database : databaseInfo.getDatabases()) {
+                if (database.getDatabaseName().equals(databaseName)) {
+                    tableManager = new TableManager(database.getFilePath());
+                    databaseCache.put(databaseName, tableManager);
+                }
+            }
+        }
+        return tableManager;
+    }
+
     public void initConfig() {
         FileInputStream fileInputStream = FileUtil.getFileInputStream(DBConfig.DATABASE_CONFIG);
         // todo: buff size

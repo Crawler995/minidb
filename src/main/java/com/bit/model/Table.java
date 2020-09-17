@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,7 +25,7 @@ public class Table {
     /**
      * 表各个列名和对应的类型
      */
-    Map<String, ColumnInfo> columnInfo;
+    List<ColumnInfo> columnInfo = new ArrayList<>();
 
     /**
      * 表内容的储存位置

@@ -9,7 +9,11 @@ import lombok.Data;
  */
 @Data
 public class ColumnInfo {
+    String columnName = "";
+
     DataType type = DataType.STRING;
 
     Boolean hasIndex = false;
+
+    String indexFilePath = "";
 }
