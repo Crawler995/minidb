@@ -199,12 +199,22 @@ public class LeafNode extends AbstractNode {
 
     @Override
     public void updatePoint(Comparable key, Long value, Long newValue, BplusTree tree) {
-        for (Point point : points) {
-            if (point.getKey().compareTo(key) == 0 && point.getValue().equals(value)) {
-                point.setValue(newValue);
-                tree.updateToFile(tree.getNum(this));
-                break;
+        LeafNode node = this;
+        while (node != null) {
+            for (Point point : node.points) {
+                if (point.getKey().compareTo(key) > 0) {
+                    return;
+                }
+                // 如果找到该值
+                if (point.getKey().compareTo(key) == 0 && point.getValue().equals(value)) {
+                    point.setValue(newValue);
+                }
             }
+            if (next == -1) {
+                return;
+            }
+            tree.getNode(next).updatePoint(key, value, newValue, tree);
+            return;
         }
     }
 
