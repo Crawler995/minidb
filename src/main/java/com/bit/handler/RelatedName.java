@@ -1,10 +1,11 @@
 package com.bit.handler;
 
 public class RelatedName {
-    protected String databaseName;
-    protected String tableName;
-    protected String columnName;
-    protected String aliasName;
+    String databaseName;
+    String tableName;
+    String columnName;
+    String indexName;
+    String aliasName;
 
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
@@ -37,4 +38,13 @@ public class RelatedName {
     public String getTableName() {
         return tableName;
     }
+
+    public void setIndexName(String indexName) {
+        this.indexName = indexName;
+    }
+
+    public String getIndexName() {
+        return indexName;
+    }
 }
+

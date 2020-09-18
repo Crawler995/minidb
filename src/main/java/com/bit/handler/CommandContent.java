@@ -11,18 +11,23 @@ import java.util.Map;
 
 public class CommandContent {
     public enum Operation{
-        create,delete,select
+        createDatabase,createIndex,delete,select
     }
 
     Operation operation = null;
     List<ColumnName> columnNames = new ArrayList<>();
     List<TableName> tableNames = new ArrayList<>();
+    String databaseName = null;
+    IndexName indexName = null;
     Map<String,Boolean> config = new HashMap<>();
-
+    String rawCommand = null;
     List<String> tempString = new ArrayList<>();
 
     public void setOperation(Operation operation) {
         this.operation = operation;
+    }
+    public Operation getOperation() {
+        return operation;
     }
 
     public void addColumnName(String name, String aliasName, String belongedTableName, String databaseName){
@@ -38,7 +43,6 @@ public class CommandContent {
     public void addColumnName(String columnName){
         columnNames.add(new ColumnName(columnName, null,null,null));
     }
-
     public List<ColumnName> getColumnNames() {
         return columnNames;
     }
@@ -60,8 +64,32 @@ public class CommandContent {
         return tableNames;
     }
 
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
+    }
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setIndexName(String indexName,String tableName,String databaseName,List<String> columnName){
+        this.indexName = new IndexName(indexName,tableName,databaseName,columnName);
+    }
+    public IndexName getIndexName() {
+        return indexName;
+    }
+
+    public void setRawCommand(String rawCommand) {
+        this.rawCommand = rawCommand;
+    }
+    public String getRawCommand() {
+        return rawCommand;
+    }
+
     public void addConfig(String config){
         this.config.put(config,true);
+    }
+    public Map<String, Boolean> getConfig() {
+        return config;
     }
 
     public void addTempString(String tempString) {

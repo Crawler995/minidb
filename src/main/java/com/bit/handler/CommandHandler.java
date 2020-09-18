@@ -54,6 +54,7 @@ public class CommandHandler {
         sqlCommandVisitor.visit(tree);
 
         CommandContent content =  commandContents.get(0);
+        System.out.println("operation:" + content.getOperation().name() +"\nColumnName:" + content.getColumnNames().get(0).getColumnName() + "\nTableName:" + content.getTableNames().get(0).getTableName());
 
         /**
          * analyse commandContents here
