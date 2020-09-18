@@ -25,12 +25,15 @@ public class TableManager {
     public TableManager() {
     }
 
-    public TableManager(String filePath) {
+    public TableManager(String databaseName, String filePath) {
         this.tableInfoPath = filePath;
+        this.databaseName = databaseName;
         initTableInfo();
     }
 
     private String tableInfoPath = "";
+
+    private String databaseName = "";
 
     private Map<String, TableDataManager> tableCache = new HashMap<>();
 
@@ -53,9 +56,8 @@ public class TableManager {
         if (containTable(table.getTableName())) {
             throw new SameNameTableException("已经有对应表，无法创建");
         }
-        String filePath = table.getFilePath();
-        if (filePath == null) {
-            filePath = DBConfig.TABLE_POSITION+"/"+table.getTableName();
+        if (table.getFilePath() == null) {
+            table.setFilePath(DBConfig.TABLE_POSITION + "/" + databaseName + "/" + table.getTableName());
         }
         TableDataManager tableDataManager = new TableDataManager(table);
         tableCache.put(table.getTableName(), tableDataManager);
@@ -101,6 +103,16 @@ public class TableManager {
      */
     public List<Table> getTables() {
         return tableInfo.getTables();
+    }
+
+    public void createIndex(String tableName, String columnName, String filePath) throws Exception {
+        getTableDataManager(tableName).createIndex(columnName, filePath);
+        storeToFile();
+    }
+
+    public void deleteIndex(String tableName, String columnName) throws Exception {
+        getTableDataManager(tableName).deleteIndex(columnName);
+        storeToFile();
     }
 
     private void storeToFile() {

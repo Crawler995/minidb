@@ -340,17 +340,16 @@ public class DataTest {
                 TableManager tableManager = DatabaseManager.getInstance().getTableManager(databaseName);
                 System.out.print("table > ");
                 String tableName = scanner.nextLine();
-                TableDataManager tableDataManager = tableManager.getTableDataManager(tableName);
                 TableData tableData = new TableData();
                 System.out.print("columnName > ");
                 String columnName = scanner.nextLine();
                 System.out.print("filePath > ");
                 String filePath = scanner.nextLine();
-                if (columnName.equals("exit")) {
+                if (filePath.equals("exit")) {
                     filePath = null;
                 }
                 try {
-                    tableDataManager.createIndex(columnName, filePath);
+                    tableManager.createIndex(tableName, columnName, filePath);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -362,12 +361,11 @@ public class DataTest {
                 TableManager tableManager = DatabaseManager.getInstance().getTableManager(databaseName);
                 System.out.print("table > ");
                 String tableName = scanner.nextLine();
-                TableDataManager tableDataManager = tableManager.getTableDataManager(tableName);
                 TableData tableData = new TableData();
                 System.out.print("columnName > ");
                 String columnName = scanner.nextLine();
                 try {
-                    tableDataManager.deleteIndex(columnName);
+                    tableManager.deleteIndex(tableName, columnName);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

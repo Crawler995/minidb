@@ -38,7 +38,8 @@ public class TableDataManager {
 
     public void insert(TableData tableData) {
         byte[] dataBytes = KryoUtil.serialize(tableData);
-        long length = new File(dataFilePath).length();
+        File file = new File(dataFilePath);
+        long length = file.length();
         Long pageNum = length / (1024 * 1024);
         // dataBytes小于1M
         if (length % (1024 * 1024) + dataBytes.length < 1024 * 1024) {
@@ -60,10 +61,10 @@ public class TableDataManager {
                 if (indexManager == null) {
                     String indexFilePath = columnInfo.getIndexFilePath();
                     indexManager = new IndexManager(indexFilePath);
-                    indexCache.put(columnInfo.getColumnName(), indexManager);
-                    Object o = tableData.getData().get(columnInfo.getColumnName());
-                    indexManager.insert(transferObject(o, columnInfo.getType()), pageNum);
                 }
+                indexCache.put(columnInfo.getColumnName(), indexManager);
+                Object o = tableData.getData().get(columnInfo.getColumnName());
+                indexManager.insert(transferObject(o, columnInfo.getType()), pageNum);
             }
         }
     }
@@ -74,19 +75,18 @@ public class TableDataManager {
         String indexName = getIndex(deleteTableData);
         IndexManager indexManager = null;
         if (indexName != null) {
-            indexManager = indexCache.get(indexName);
-            if (indexManager == null) {
-                for (ColumnInfo columnInfo : table.getColumnInfo()) {
-                    if (columnInfo.getColumnName().equals(indexName)) {
-                        //建立索引
+            for (ColumnInfo columnInfo : table.getColumnInfo()) {
+                if (columnInfo.getColumnName().equals(indexName)) {
+                    //建立索引
+                    indexManager = indexCache.get(indexName);
+                    if (indexManager == null) {
                         String indexFilePath = columnInfo.getIndexFilePath();
                         indexManager = new IndexManager(indexFilePath);
-                        indexCache.put(columnInfo.getColumnName(), indexManager);
-                        Object o = deleteTableData.getData().get(columnInfo.getColumnName());
-                        pageNumList = indexManager.select(transferObject(o, columnInfo.getType()));
                     }
+                    indexCache.put(columnInfo.getColumnName(), indexManager);
+                    Object o = deleteTableData.getData().get(columnInfo.getColumnName());
+                    pageNumList = indexManager.select(transferObject(o, columnInfo.getType()));
                 }
-
             }
         } else {
             for (int i = 0; i <= length / (1024 * 1024); i++) {
@@ -136,17 +136,17 @@ public class TableDataManager {
         String indexName = getIndex(selectTableData);
         IndexManager indexManager = null;
         if (indexName != null) {
-            indexManager = indexCache.get(indexName);
-            if (indexManager == null) {
-                for (ColumnInfo columnInfo : table.getColumnInfo()) {
-                    if (columnInfo.getColumnName().equals(indexName)) {
-                        //建立索引
+            for (ColumnInfo columnInfo : table.getColumnInfo()) {
+                if (columnInfo.getColumnName().equals(indexName)) {
+                    //建立索引
+                    indexManager = indexCache.get(indexName);
+                    if (indexManager == null) {
                         String indexFilePath = columnInfo.getIndexFilePath();
                         indexManager = new IndexManager(indexFilePath);
-                        indexCache.put(columnInfo.getColumnName(), indexManager);
-                        Object o = selectTableData.getData().get(columnInfo.getColumnName());
-                        pageNumList = indexManager.select(transferObject(o, columnInfo.getType()));
                     }
+                    indexCache.put(columnInfo.getColumnName(), indexManager);
+                    Object o = selectTableData.getData().get(columnInfo.getColumnName());
+                    pageNumList = indexManager.select(transferObject(o, columnInfo.getType()));
                 }
 
             }
@@ -185,17 +185,19 @@ public class TableDataManager {
         String indexName = getIndex(originTableData);
         IndexManager indexManager = null;
         if (indexName != null) {
-            indexManager = indexCache.get(indexName);
-            if (indexManager == null) {
-                for (ColumnInfo columnInfo : table.getColumnInfo()) {
-                    if (columnInfo.getColumnName().equals(indexName)) {
-                        //建立索引
+
+
+            for (ColumnInfo columnInfo : table.getColumnInfo()) {
+                if (columnInfo.getColumnName().equals(indexName)) {
+                    //建立索引
+                    indexManager = indexCache.get(indexName);
+                    if (indexManager == null) {
                         String indexFilePath = columnInfo.getIndexFilePath();
                         indexManager = new IndexManager(indexFilePath);
-                        indexCache.put(columnInfo.getColumnName(), indexManager);
-                        Object o = originTableData.getData().get(columnInfo.getColumnName());
-                        pageNumList = indexManager.select(transferObject(o, columnInfo.getType()));
                     }
+                    indexCache.put(columnInfo.getColumnName(), indexManager);
+                    Object o = originTableData.getData().get(columnInfo.getColumnName());
+                    pageNumList = indexManager.select(transferObject(o, columnInfo.getType()));
                 }
 
             }
@@ -238,7 +240,7 @@ public class TableDataManager {
                 }
                 columnInfo.setHasIndex(true);
                 if (filePath == null) {
-                    filePath = DBConfig.Index_POSITION+"/"+table.getTableName()+"_"+columnInfo.getColumnName();
+                    filePath = DBConfig.Index_POSITION + "/" + table.getTableName() + "/" + columnInfo.getColumnName();
                 }
                 if (new File(filePath).exists()) {
                     throw new Exception("文件已经存在，请删除对应文件后创建");
@@ -249,6 +251,7 @@ public class TableDataManager {
                 return;
             }
         }
+
     }
 
     public void deleteIndex(String columnName) throws Exception {

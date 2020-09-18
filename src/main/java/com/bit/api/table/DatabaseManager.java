@@ -52,7 +52,7 @@ public class DatabaseManager {
             filePath = DBConfig.DATABASE_POSITION+"/"+database.getDatabaseName();
         }
         database.setFilePath(filePath);
-        TableManager tableManager = new TableManager(filePath);
+        TableManager tableManager = new TableManager(database.getDatabaseName(), filePath);
         databaseCache.put(database.getDatabaseName(), tableManager);
         databaseInfo.getDatabases().add(database);
         storeToFile();
@@ -97,7 +97,7 @@ public class DatabaseManager {
         // 如果当前存在该数据库
         TableManager tableManager = databaseCache.get(databaseName);
         if (tableManager == null) {
-            tableManager = new TableManager(database.getFilePath());
+            tableManager = new TableManager(databaseName, database.getFilePath());
         }
         return tableManager.getTables();
     }
@@ -114,7 +114,7 @@ public class DatabaseManager {
         if (tableManager == null) {
             for (Database database : databaseInfo.getDatabases()) {
                 if (database.getDatabaseName().equals(databaseName)) {
-                    tableManager = new TableManager(database.getFilePath());
+                    tableManager = new TableManager(databaseName, database.getFilePath());
                     databaseCache.put(databaseName, tableManager);
                 }
             }
