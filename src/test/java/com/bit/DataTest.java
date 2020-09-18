@@ -333,6 +333,45 @@ public class DataTest {
                 }
                 tableDataManager.update(originData, newData);
             }
+
+            if (command.equals("create index")) {
+                System.out.print("database > ");
+                String databaseName = scanner.nextLine();
+                TableManager tableManager = DatabaseManager.getInstance().getTableManager(databaseName);
+                System.out.print("table > ");
+                String tableName = scanner.nextLine();
+                TableDataManager tableDataManager = tableManager.getTableDataManager(tableName);
+                TableData tableData = new TableData();
+                System.out.print("columnName > ");
+                String columnName = scanner.nextLine();
+                System.out.print("filePath > ");
+                String filePath = scanner.nextLine();
+                if (columnName.equals("exit")) {
+                    filePath = null;
+                }
+                try {
+                    tableDataManager.createIndex(columnName, filePath);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (command.equals("delete index")) {
+                System.out.print("database > ");
+                String databaseName = scanner.nextLine();
+                TableManager tableManager = DatabaseManager.getInstance().getTableManager(databaseName);
+                System.out.print("table > ");
+                String tableName = scanner.nextLine();
+                TableDataManager tableDataManager = tableManager.getTableDataManager(tableName);
+                TableData tableData = new TableData();
+                System.out.print("columnName > ");
+                String columnName = scanner.nextLine();
+                try {
+                    tableDataManager.deleteIndex(columnName);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }
