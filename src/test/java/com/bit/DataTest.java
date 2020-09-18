@@ -76,7 +76,6 @@ public class DataTest {
                     columnInfos.add(columnInfo);
                 }
                 table.setColumnInfo(columnInfos);
-                table.setFilePath(PathUtil.getSystemAdaptedPath("/tmp/table/"+tableName));
                 try {
                     tableManager.createTable(table);
                 } catch (SameNameTableException e) {

@@ -1,5 +1,10 @@
 package com.bit.api.table;
 
+import com.bit.bplustree.BplusTree;
+import com.bit.bplustree.Point;
+import com.bit.constance.DBConfig;
+import com.bit.constance.DataType;
+import com.bit.exception.IndexExistException;
 import com.bit.model.*;
 import com.bit.utils.FileUtil;
 import com.bit.utils.KryoUtil;
@@ -29,11 +34,14 @@ public class TableDataManager {
 
     private Map<Long, TableData> tableDataCache = new HashMap<>();
 
+    private Map<String, IndexManager> indexCache = new HashMap<>();
+
     public void insert(TableData tableData) {
         byte[] dataBytes = KryoUtil.serialize(tableData);
         long length = new File(dataFilePath).length();
+        Long pageNum = length / (1024 * 1024);
         // dataBytes小于1M
-        if (length%(1024*1024)+dataBytes.length < 1024*1024) {
+        if (length % (1024 * 1024) + dataBytes.length < 1024 * 1024) {
             FileOutputStream fileOutputStream = FileUtil.getFileOutputStream(dataFilePath, false);
             try {
                 fileOutputStream.write(dataBytes);
@@ -41,84 +49,129 @@ public class TableDataManager {
                 e.printStackTrace();
             }
             FileUtil.closeOutputSteam(fileOutputStream);
-        }
-        else {
-            Long pageNum = length/(1024*1024)+1;
-            FileUtil.writeFileByte(dataFilePath, pageNum, dataBytes, 1024*1024);
+        } else {
+            pageNum = pageNum + 1;
+            FileUtil.writeFileByte(dataFilePath, pageNum, dataBytes, 1024 * 1024);
         }
         for (ColumnInfo columnInfo : table.getColumnInfo()) {
             if (columnInfo.getHasIndex()) {
                 //建立索引
+                IndexManager indexManager = indexCache.get(columnInfo.getColumnName());
+                if (indexManager == null) {
+                    String indexFilePath = columnInfo.getIndexFilePath();
+                    indexManager = new IndexManager(indexFilePath);
+                    indexCache.put(columnInfo.getColumnName(), indexManager);
+                    Object o = tableData.getData().get(columnInfo.getColumnName());
+                    indexManager.insert(transferObject(o, columnInfo.getType()), pageNum);
+                }
             }
         }
     }
 
     public void delete(TableData deleteTableData) {
-        Long pageNum = 0L;
+        List<Long> pageNumList = new ArrayList<>();
+        long length = new File(dataFilePath).length();
         String indexName = getIndex(deleteTableData);
+        IndexManager indexManager = null;
         if (indexName != null) {
-            //通过索引获取页号
-        } else {
-            Long length = new File(dataFilePath).length();
-            for (int i = 0; i <= length/(1024*1024); i++) {
-                byte[] bytes = FileUtil.getFileByte(dataFilePath, (long) i, 1024 * 1024);
-                Input input = new Input(bytes);
-                List<TableData> tableDataList = new LinkedList<>();
-                try {
-                    while (true) {
-                        TableData tableData = (TableData) KryoUtil.deserialize(input);
-                        if (tableData == null) {
-                            break;
-                        }
-                        tableDataList.add(tableData);
-                    }
-                } catch (Exception ignored){
-                }
-                Boolean flag = false;
-                Iterator<TableData> iterator = tableDataList.iterator();
-                while (iterator.hasNext()){
-                    TableData tableData = iterator.next();
-                    if (compare(tableData, deleteTableData)) {
-                        iterator.remove();
-                        flag = true;
+            indexManager = indexCache.get(indexName);
+            if (indexManager == null) {
+                for (ColumnInfo columnInfo : table.getColumnInfo()) {
+                    if (columnInfo.getColumnName().equals(indexName)) {
+                        //建立索引
+                        String indexFilePath = columnInfo.getIndexFilePath();
+                        indexManager = new IndexManager(indexFilePath);
+                        indexCache.put(columnInfo.getColumnName(), indexManager);
+                        Object o = deleteTableData.getData().get(columnInfo.getColumnName());
+                        pageNumList = indexManager.select(transferObject(o, columnInfo.getType()));
                     }
                 }
 
-                if (flag) {
-                    byte[] newBytes = KryoUtil.serialize(tableDataList);
-                    byte[] writeByte = Arrays.copyOf(newBytes, 1024*1024);
-                    FileUtil.writeFileByte(dataFilePath, (long) i, writeByte, 1024*1024);
-                }
+            }
+        } else {
+            for (int i = 0; i <= length / (1024 * 1024); i++) {
+                pageNumList.add((long) i);
             }
         }
+        for (Long i : pageNumList) {
+            byte[] bytes = FileUtil.getFileByte(dataFilePath, i, 1024 * 1024);
+            Input input = new Input(bytes);
+            List<TableData> tableDataList = new LinkedList<>();
+            try {
+                while (true) {
+                    TableData tableData = (TableData) KryoUtil.deserialize(input);
+                    if (tableData == null) {
+                        break;
+                    }
+                    tableDataList.add(tableData);
+                }
+            } catch (Exception ignored) {
+            }
+            Boolean flag = false;
+            Iterator<TableData> iterator = tableDataList.iterator();
+            while (iterator.hasNext()) {
+                TableData tableData = iterator.next();
+                if (compare(tableData, deleteTableData)) {
+                    iterator.remove();
+                    if (indexName != null) {
+                        deleteIndex(tableData, i);
+                    }
+                    flag = true;
+                }
+            }
+
+            if (flag) {
+                byte[] newBytes = KryoUtil.serialize(tableDataList);
+                byte[] writeByte = Arrays.copyOf(newBytes, 1024 * 1024);
+                FileUtil.writeFileByte(dataFilePath, (long) i, writeByte, 1024 * 1024);
+            }
+        }
+
     }
 
     public List<TableData> select(TableData selectTableData) {
-        Long pageNum = 0L;
-        String indexName = getIndex(selectTableData);
         List<TableData> selectTableDataList = new LinkedList<>();
+        List<Long> pageNumList = new ArrayList<>();
+        long length = new File(dataFilePath).length();
+        String indexName = getIndex(selectTableData);
+        IndexManager indexManager = null;
         if (indexName != null) {
-            //通过索引获取页号
-        } else {
-            Long length = new File(dataFilePath).length();
-            for (int i = 0; i <= length/(1024*1024); i++) {
-                byte[] bytes = FileUtil.getFileByte(dataFilePath, (long) i, 1024 * 1024);
-                Input input = new Input(bytes);
-                List<TableData> tableDataList = new LinkedList<>();
-                try {
-                    while (true) {
-                        TableData tableData = (TableData) KryoUtil.deserialize(input);
-                        if (tableData == null) {
-                            break;
-                        }
-                        tableDataList.add(tableData);
+            indexManager = indexCache.get(indexName);
+            if (indexManager == null) {
+                for (ColumnInfo columnInfo : table.getColumnInfo()) {
+                    if (columnInfo.getColumnName().equals(indexName)) {
+                        //建立索引
+                        String indexFilePath = columnInfo.getIndexFilePath();
+                        indexManager = new IndexManager(indexFilePath);
+                        indexCache.put(columnInfo.getColumnName(), indexManager);
+                        Object o = selectTableData.getData().get(columnInfo.getColumnName());
+                        pageNumList = indexManager.select(transferObject(o, columnInfo.getType()));
                     }
-                } catch (Exception ignored){
                 }
-                for (TableData tableData : tableDataList) {
-                    if (compare(tableData, selectTableData)) {
-                        selectTableDataList.add(tableData);
+
+            }
+        } else {
+            for (int i = 0; i <= length / (1024 * 1024); i++) {
+                pageNumList.add((long) i);
+            }
+        }
+        for (Long i : pageNumList) {
+            byte[] bytes = FileUtil.getFileByte(dataFilePath, i, 1024 * 1024);
+            Input input = new Input(bytes);
+            List<TableData> tableDataList = new LinkedList<>();
+            try {
+                while (true) {
+                    TableData tableData = (TableData) KryoUtil.deserialize(input);
+                    if (tableData == null) {
+                        break;
                     }
+                    tableDataList.add(tableData);
+                }
+            } catch (Exception ignored) {
+            }
+            for (TableData tableData : tableDataList) {
+                if (compare(tableData, selectTableData)) {
+                    selectTableDataList.add(tableData);
                 }
             }
         }
@@ -126,34 +179,90 @@ public class TableDataManager {
     }
 
     public void update(TableData originTableData, TableData updateTableData) {
-        Long pageNum = 0L;
-        String indexName = getIndex(updateTableData);
+        List<TableData> selectTableDataList = new LinkedList<>();
+        List<Long> pageNumList = new ArrayList<>();
+        long length = new File(dataFilePath).length();
+        String indexName = getIndex(originTableData);
+        IndexManager indexManager = null;
         if (indexName != null) {
-            //通过索引获取页号
+            indexManager = indexCache.get(indexName);
+            if (indexManager == null) {
+                for (ColumnInfo columnInfo : table.getColumnInfo()) {
+                    if (columnInfo.getColumnName().equals(indexName)) {
+                        //建立索引
+                        String indexFilePath = columnInfo.getIndexFilePath();
+                        indexManager = new IndexManager(indexFilePath);
+                        indexCache.put(columnInfo.getColumnName(), indexManager);
+                        Object o = originTableData.getData().get(columnInfo.getColumnName());
+                        pageNumList = indexManager.select(transferObject(o, columnInfo.getType()));
+                    }
+                }
+
+            }
         } else {
-            Long length = new File(dataFilePath).length();
-            for (int i = 0; i <= length/(1024*1024); i++) {
-                byte[] bytes = FileUtil.getFileByte(dataFilePath, (long) i, 1024 * 1024);
-                Input input = new Input(bytes);
-                List<TableData> tableDataList = new LinkedList<>();
-                try {
-                    while (true) {
-                        TableData tableData = (TableData) KryoUtil.deserialize(input);
-                        if (tableData == null) {
-                            break;
-                        }
-                        tableDataList.add(tableData);
+            for (int i = 0; i <= length / (1024 * 1024); i++) {
+                pageNumList.add((long) i);
+            }
+        }
+        for (Long i : pageNumList) {
+            byte[] bytes = FileUtil.getFileByte(dataFilePath, i, 1024 * 1024);
+            Input input = new Input(bytes);
+            List<TableData> tableDataList = new LinkedList<>();
+            try {
+                while (true) {
+                    TableData tableData = (TableData) KryoUtil.deserialize(input);
+                    if (tableData == null) {
+                        break;
                     }
-                } catch (Exception ignored){
+                    tableDataList.add(tableData);
                 }
-                for (TableData tableData : tableDataList) {
-                    if (compare(tableData, originTableData)) {
-                        updateTableData(tableData, updateTableData);
-                    }
+            } catch (Exception ignored) {
+            }
+            for (TableData tableData : tableDataList) {
+                if (compare(tableData, originTableData)) {
+                    updateTableData(tableData, updateTableData);
                 }
-                byte[] newBytes = KryoUtil.serialize(tableDataList);
-                byte[] writeByte = Arrays.copyOf(newBytes, 1024*1024);
-                FileUtil.writeFileByte(dataFilePath, (long) i, writeByte, 1024*1024);
+            }
+            byte[] newBytes = KryoUtil.serialize(tableDataList);
+            byte[] writeByte = Arrays.copyOf(newBytes, 1024 * 1024);
+            FileUtil.writeFileByte(dataFilePath, (long) i, writeByte, 1024 * 1024);
+        }
+
+    }
+
+    public void createIndex(String columnName, String filePath) throws Exception {
+        for (ColumnInfo columnInfo : table.getColumnInfo()) {
+            if (columnInfo.getColumnName().equals(columnName)) {
+                if (columnInfo.getHasIndex()) {
+                    throw new IndexExistException("已经存在该索引，请先删除再创建");
+                }
+                columnInfo.setHasIndex(true);
+                if (filePath == null) {
+                    filePath = DBConfig.Index_POSITION+"/"+table.getTableName()+"_"+columnInfo.getColumnName();
+                }
+                if (new File(filePath).exists()) {
+                    throw new Exception("文件已经存在，请删除对应文件后创建");
+                }
+                columnInfo.setIndexFilePath(filePath);
+                IndexManager indexManager = new IndexManager(filePath);
+                indexCache.put(columnName, indexManager);
+                return;
+            }
+        }
+    }
+
+    public void deleteIndex(String columnName) throws Exception {
+        for (ColumnInfo columnInfo : table.getColumnInfo()) {
+            if (columnInfo.getColumnName().equals(columnName)) {
+                if (!columnInfo.getHasIndex()) {
+                    throw new Exception("不存在该索引，无需删除");
+                }
+                columnInfo.setHasIndex(false);
+                String filePath = columnInfo.getIndexFilePath();
+                new File(filePath).delete();
+                columnInfo.setIndexFilePath(null);
+                indexCache.remove(columnName);
+                return;
             }
         }
     }
@@ -194,6 +303,40 @@ public class TableDataManager {
             }
         }
         return null;
+    }
+
+    private Comparable transferObject(Object object, DataType type) {
+        if (type == DataType.DOUBLE) {
+            return (Double) object;
+        }
+        if (type == DataType.LONG) {
+            return (Long) object;
+        }
+        if (type == DataType.INT) {
+            return (Integer) object;
+        }
+        if (type == DataType.STRING) {
+            return (String) object;
+        }
+        if (type == DataType.FLOAT) {
+            return (Float) object;
+        }
+        return null;
+    }
+
+    private void deleteIndex(TableData tableData, Long pageNum) {
+        for (ColumnInfo columnInfo : table.getColumnInfo()) {
+            if (columnInfo.getHasIndex()) {
+                String columnName = columnInfo.getColumnName();
+                IndexManager indexManager = indexCache.get(columnName);
+                if (indexManager == null) {
+                    indexManager = new IndexManager(columnInfo.getIndexFilePath());
+                    indexCache.put(columnInfo.getColumnName(), indexManager);
+                }
+                Object o = tableData.getData().get(columnName);
+                indexManager.delete(transferObject(o, columnInfo.getType()), pageNum);
+            }
+        }
     }
 
     public Table getTable() {
