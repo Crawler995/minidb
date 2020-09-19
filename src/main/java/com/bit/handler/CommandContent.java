@@ -11,17 +11,23 @@ import java.util.Map;
 
 public class CommandContent {
     public enum Operation{
-        createDatabase,createIndex,delete,select
+        createDatabase,createTable,createIndex,
+        dropDatabase,dropTable,dropIndex,
+        showDatabases,showTables,
+        use,
+        insert,select,
+        errorCommand
     }
 
     Operation operation = null;
     List<ColumnName> columnNames = new ArrayList<>();
     List<TableName> tableNames = new ArrayList<>();
-    String databaseName = null;
+    String databaseName = null; // create/drop/use database
     IndexName indexName = null;
     Map<String,Boolean> config = new HashMap<>();
     String rawCommand = null;
     List<String> tempString = new ArrayList<>();
+    List<TableCreateInfo> tableCreateInfo = new ArrayList<>();
 
     public void setOperation(Operation operation) {
         this.operation = operation;
@@ -100,5 +106,15 @@ public class CommandContent {
     }
     public String getTempString(int i){
         return this.tempString.get(i);
+    }
+
+    public void addTableInfo(String columnName,String type){
+        tableCreateInfo.add(new TableCreateInfo(columnName,type));
+    }
+    public void addTableInfo(List<TableCreateInfo> tableCreateInfo){
+        this.tableCreateInfo.addAll(tableCreateInfo);
+    }
+    public List<TableCreateInfo> getTableCreateInfo() {
+        return tableCreateInfo;
     }
 }

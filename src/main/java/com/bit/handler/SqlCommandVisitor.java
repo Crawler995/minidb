@@ -2,10 +2,12 @@ package com.bit.handler;
 
 import com.sun.org.apache.xml.internal.security.c14n.implementations.Canonicalizer11_OmitComments;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentMap;
 
 public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
-    private List<CommandContent> commandContents;
+    List<CommandContent> commandContents;
     String rawCommand = null;
     SqlCommandVisitor(List<CommandContent> contents){
         commandContents = contents;
@@ -14,6 +16,27 @@ public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
     @Override
     public CommandContent visitSqlStatement(MySqlParser.SqlStatementContext ctx) {
         rawCommand = ctx.getText();
+        if(rawCommand.equals("SHOW DATABASES")){
+            CommandContent content = new CommandContent();
+            content.setOperation(CommandContent.Operation.showDatabases);
+            content.setRawCommand(rawCommand);
+            commandContents.add(content);
+            return null;
+        }
+        if(rawCommand.equals("SHOW TABLES")){
+            CommandContent content = new CommandContent();
+            content.setOperation(CommandContent.Operation.showTables);
+            content.setRawCommand(rawCommand);
+            commandContents.add(content);
+            return null;
+        }
+        if(ctx.children.size() <= 0){
+            CommandContent content = new CommandContent();
+            content.setOperation(CommandContent.Operation.errorCommand);
+            content.setRawCommand(rawCommand);
+            commandContents.add(content);
+            return null;
+        }
         visit(ctx.getChild(0));
         return null;
     }
@@ -28,11 +51,12 @@ public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
             for(MySqlParser.CreateDatabaseOptionContext c : ctx.createDatabaseOption()){
                 content.addConfig(c.getText());
             }
+            if(ctx.ifNotExists() != null){
+                content.addConfig(ctx.ifNotExists().getText());
+            }
         }
         else{
-            /**
-             * TODO:error catch
-             */
+           content.setOperation(CommandContent.Operation.errorCommand);
         }
         content.setRawCommand(rawCommand);
         commandContents.add(content);
@@ -78,13 +102,140 @@ public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
         return null;
     }
 
+    @Override
+    public CommandContent visitColumnCreateTable(MySqlParser.ColumnCreateTableContext ctx) {
+        CommandContent content = new CommandContent();
+        content.setOperation(CommandContent.Operation.createTable);
+        if(ctx.ifNotExists() != null){
+            content.addConfig(ctx.ifNotExists().getText());
+        }
+        String tableName;
+        String databaseName;
+        List<String> tempString = visit(ctx.tableName()).getTempString();
+        switch(tempString.size()){
+            case 1:
+                tableName = tempString.get(0);
+                databaseName = null;
+                break;
+            case 2:
+                tableName = tempString.get(1);
+                databaseName = tempString.get(0);
+                break;
+            default:
+                tableName = databaseName = null;
+                /**
+                 * error!
+                 */
+                break;
+        }
+        content.addTableName(tableName,null,databaseName);
+        content.addTableInfo(visit(ctx.createDefinitions()).getTableCreateInfo());
+        content.setRawCommand(rawCommand);
+        commandContents.add(content);
+        return null;
+    }
+
+    @Override
+    public CommandContent visitDropDatabase(MySqlParser.DropDatabaseContext ctx) {
+        CommandContent content = new CommandContent();
+        if(ctx.dbFormat.getText().equals("DATABASE")){
+            content.setOperation(CommandContent.Operation.dropDatabase);
+            content.setDatabaseName(visit(ctx.uid()).getTempString().get(0));
+            if(ctx.ifExists() != null){
+                content.addConfig(ctx.ifExists().getText());
+            }
+        }
+        else{
+            content.setOperation(CommandContent.Operation.errorCommand);
+
+        }
+        content.setRawCommand(rawCommand);
+        commandContents.add(content);
+        return null;
+    }
+
+    @Override
+    public CommandContent visitDropTable(MySqlParser.DropTableContext ctx) {
+        CommandContent content = new CommandContent();
+        content.setOperation(CommandContent.Operation.dropTable);
+        content.setRawCommand(rawCommand);
+        if(ctx.ifExists() != null){
+            content.addConfig(ctx.ifExists().getText());
+        }
+        for(MySqlParser.TableNameContext c:  ctx.tables().tableName()){
+            String tableName;
+            String databaseName;
+            List<String> tempString = visit(c).getTempString();
+            switch(tempString.size()){
+                case 1:
+                    tableName = tempString.get(0);
+                    databaseName = null;
+                    break;
+                case 2:
+                    tableName = tempString.get(1);
+                    databaseName = tempString.get(0);
+                    break;
+                default:
+                    tableName = databaseName = null;
+                    /**
+                     * error!
+                     */
+                    break;
+            }
+            content.addTableName(tableName,null,databaseName);
+        }
+        commandContents.add(content);
+        return null;
+    }
+
+    @Override
+    public CommandContent visitDropIndex(MySqlParser.DropIndexContext ctx) {
+        CommandContent content = new CommandContent();
+        String tableName;
+        String databaseName;
+        String indexName;
+        indexName = visit(ctx.uid()).getTempString(0);
+        List<String> tempString = visit(ctx.tableName()).getTempString();
+        switch(tempString.size()){
+            case 1:
+                tableName = tempString.get(0);
+                databaseName = null;
+                break;
+            case 2:
+                tableName = tempString.get(1);
+                databaseName = tempString.get(0);
+                break;
+            default:
+                tableName = databaseName = null;
+                /**
+                 * error!
+                 */
+                break;
+        }
+        content.setRawCommand(rawCommand);
+        content.setOperation(CommandContent.Operation.dropIndex);
+        content.setIndexName(indexName,tableName,databaseName,null);
+        commandContents.add(content);
+        return  null;
+    }
+
+    @Override
+    public CommandContent visitUseStatement(MySqlParser.UseStatementContext ctx) {
+        CommandContent content = new CommandContent();
+        String databaseName = visit(ctx.uid()).getTempString(0);
+
+        content.setDatabaseName(databaseName);
+        content.setOperation(CommandContent.Operation.use);
+        content.setRawCommand(rawCommand);
+        commandContents.add(content);
+        return null;
+    }
+
     /** data manipulation language statement ***************** here to add CommandContent List*/
 
 
     /**
      * select statement
-     * @param ctx
-     * @return null
      */
     @Override
     public CommandContent visitSimpleSelect(MySqlParser.SimpleSelectContext ctx) {
@@ -109,16 +260,59 @@ public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
         return null;
     }
 
+    /** insert*/
+    @Override
+    public CommandContent visitInsertStatement(MySqlParser.InsertStatementContext ctx) {
+        CommandContent content = new CommandContent();
+        List<String> columnNames = new ArrayList<>();
+        String tableName;
+        String databaseName;
+        List<String> tempString = visit(ctx.tableName()).getTempString();
+        switch(tempString.size()){
+            case 1:
+                tableName = tempString.get(0);
+                databaseName = null;
+                break;
+            case 2:
+                tableName = tempString.get(1);
+                databaseName = tempString.get(0);
+                break;
+            default:
+                tableName = databaseName = null;
+                /**
+                 * error!
+                 */
+                break;
+        }
+        if(ctx.columns != null){
+            for(MySqlParser.UidContext c : ctx.uidList(1).uid()){
+                String name = visit(c).getTempString(0);
+                columnNames.add(name);
+            }
+        }
+
+
+
+        content.setOperation(CommandContent.Operation.insert);
+        content.setRawCommand(rawCommand);
+        commandContents.add(content);
+        return null;
+    }
+
+    @Override
+    public CommandContent visitInsertStatementValue(MySqlParser.InsertStatementValueContext ctx) {
+        /* no selectStatement support*/
+
+
+    }
+
     /**
      * data manipulation language statement details
      * here to create CommandContent object
      */
 
-    /**
-     * querySpecification
-     * @param ctx
-     * @return CommandContent
-     */
+
+
     @Override
     public CommandContent visitQuerySpecification(MySqlParser.QuerySpecificationContext ctx) {
         CommandContent content = new CommandContent();
@@ -381,6 +575,32 @@ public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
 
     @Override
     public CommandContent visitCreateDefinitions(MySqlParser.CreateDefinitionsContext ctx) {
-        return super.visitCreateDefinitions(ctx);
+        CommandContent content = new CommandContent();
+        for(MySqlParser.CreateDefinitionContext c: ctx.createDefinition()){
+            String columnName = visit(c).getTempString(0);
+            String type = visit(c).getTempString(1);
+            content.addTableInfo(columnName,type);
+        }
+        return content;
+    }
+
+    @Override
+    public CommandContent visitColumnDeclaration(MySqlParser.ColumnDeclarationContext ctx) {
+        CommandContent content = new CommandContent();
+        String columnName = visit(ctx.uid()).getTempString(0);
+        String type = visit(ctx.columnDefinition()).getTempString(0);
+
+        content.addTempString(columnName);
+        content.addTempString(type);
+
+        return content;
+    }
+
+    @Override
+    public CommandContent visitColumnDefinition(MySqlParser.ColumnDefinitionContext ctx) {
+        String type = ctx.dataType().getText();
+        CommandContent content = new CommandContent();
+        content.addTempString(type);
+        return content;
     }
 }
