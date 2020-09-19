@@ -1,4 +1,4 @@
-package com.bit.api.table;
+package com.bit.api.manager;
 
 import com.bit.bplustree.BplusTree;
 import com.bit.bplustree.Point;

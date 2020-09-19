@@ -1,7 +1,5 @@
-package com.bit.api.table;
+package com.bit.api.manager;
 
-import com.bit.bplustree.BplusTree;
-import com.bit.bplustree.Point;
 import com.bit.constance.DBConfig;
 import com.bit.constance.DataType;
 import com.bit.exception.IndexExistException;
@@ -9,10 +7,7 @@ import com.bit.model.*;
 import com.bit.utils.FileUtil;
 import com.bit.utils.KryoUtil;
 import com.esotericsoftware.kryo.io.Input;
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
 
-import javax.sound.sampled.DataLine;
 import java.io.*;
 import java.util.*;
 
@@ -248,6 +243,29 @@ public class TableDataManager {
                 columnInfo.setIndexFilePath(filePath);
                 IndexManager indexManager = new IndexManager(filePath);
                 indexCache.put(columnName, indexManager);
+                long length = new File(dataFilePath).length();
+                for (Long i = 0L; i <= length/(1024*1024); i++) {
+                    byte[] bytes = FileUtil.getFileByte(dataFilePath, i, 1024 * 1024);
+                    Input input = new Input(bytes);
+                    List<TableData> tableDataList = new LinkedList<>();
+                    try {
+                        while (true) {
+                            TableData tableData = (TableData) KryoUtil.deserialize(input);
+                            if (tableData == null) {
+                                break;
+                            }
+                            tableDataList.add(tableData);
+                        }
+                    } catch (Exception ignored) {
+                    }
+                    for (TableData tableData : tableDataList) {
+                        if (tableData == null) {
+                            break;
+                        }
+                        Comparable key = transferObject(tableData.getData().get(columnName), columnInfo.getType());
+                        indexManager.insert(key, i);
+                    }
+                }
                 return;
             }
         }

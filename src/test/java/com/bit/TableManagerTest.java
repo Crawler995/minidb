@@ -1,8 +1,8 @@
 package com.bit;
 
-import com.bit.api.table.DatabaseManager;
-import com.bit.api.table.TableDataManager;
-import com.bit.api.table.TableManager;
+import com.bit.api.manager.DatabaseManager;
+import com.bit.api.manager.TableDataManager;
+import com.bit.api.manager.TableManager;
 import com.bit.constance.DataType;
 import com.bit.exception.SameNameDatabaseException;
 import com.bit.exception.SameNameTableException;
@@ -11,26 +11,31 @@ import com.bit.model.Database;
 import com.bit.model.Table;
 import com.bit.model.TableData;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author aerfafish
  * @date 2020/9/15 8:00 下午
  */
+
+@SpringBootTest
 public class TableManagerTest {
+
+    @Autowired
+    DatabaseManager databaseManager;
 
     @Test
     public void createDatabase() throws SameNameDatabaseException {
-        DatabaseManager.getInstance().createDatabase(new Database("database0", null));
+        databaseManager.createDatabase(new Database("database0", null));
     }
 
     @Test
     public void createTable() throws SameNameDatabaseException {
-        TableManager tableManager = DatabaseManager.getInstance().getTableManager("database0");
+        TableManager tableManager = databaseManager.getTableManager("database0");
         List<ColumnInfo> columnInfos = new ArrayList<>();
         ColumnInfo columnInfo = new ColumnInfo();
         columnInfo.setColumnName("id");
@@ -50,7 +55,7 @@ public class TableManagerTest {
 
     @Test
     public void insertData() {
-        TableManager tableManager = DatabaseManager.getInstance().getTableManager("database0");
+        TableManager tableManager = databaseManager.getTableManager("database0");
         TableDataManager tableDataManager = tableManager.getTableDataManager("table0");
         TableData tableData = new TableData();
         tableData.getData().put("id", 123L);
@@ -59,7 +64,7 @@ public class TableManagerTest {
 
     @Test
     public void selectData() {
-        TableManager tableManager = DatabaseManager.getInstance().getTableManager("database0");
+        TableManager tableManager = databaseManager.getTableManager("database0");
         TableDataManager tableDataManager = tableManager.getTableDataManager("table0");
         TableData tableData = new TableData();
         tableData.getData().put("id", 123L);

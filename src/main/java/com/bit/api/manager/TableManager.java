@@ -1,9 +1,8 @@
-package com.bit.api.table;
+package com.bit.api.manager;
 
 import com.bit.constance.DBConfig;
 import com.bit.exception.NoNameTableException;
 import com.bit.exception.SameNameTableException;
-import com.bit.model.Database;
 import com.bit.model.Table;
 import com.bit.model.TableInfo;
 import com.bit.utils.FileUtil;

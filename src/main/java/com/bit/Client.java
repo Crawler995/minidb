@@ -10,7 +10,7 @@ import java.util.Scanner;
  */
 public class Client {
     public static void main(String[] args) {
-        CommandHandler commandHandler = CommandHandler.getInstance();
+        CommandHandler commandHandler = new CommandHandler();
         while (true) {
             System.out.print("db > ");
             Scanner scanner = new Scanner(System.in);

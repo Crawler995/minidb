@@ -1,8 +1,8 @@
 package com.bit;
 
-import com.bit.api.table.DatabaseManager;
-import com.bit.api.table.TableDataManager;
-import com.bit.api.table.TableManager;
+import com.bit.api.manager.DatabaseManager;
+import com.bit.api.manager.TableDataManager;
+import com.bit.api.manager.TableManager;
 import com.bit.bplustree.BplusTree;
 import com.bit.constance.DataType;
 import com.bit.exception.NoNameDatabaseException;
@@ -13,7 +13,9 @@ import com.bit.model.ColumnInfo;
 import com.bit.model.Database;
 import com.bit.model.Table;
 import com.bit.model.TableData;
-import com.bit.utils.PathUtil;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +25,15 @@ import java.util.Scanner;
  * @author aerfafish
  * @date 2020/9/17 1:02 上午
  */
+
+@SpringBootTest
 public class DataTest {
 
-    public static void main(String[] args) {
+    @Autowired
+    DatabaseManager databaseManager;
+
+    @Test
+    public void dataTest() {
         BplusTree tree = null;
         Scanner scanner = new Scanner(System.in);
         while (true) {
@@ -40,7 +48,7 @@ public class DataTest {
                 System.out.print("database > ");
                 String databaseName = scanner.nextLine();
                 try {
-                    DatabaseManager.getInstance().createDatabase(new Database(databaseName, null));
+                    databaseManager.createDatabase(new Database(databaseName, null));
                 } catch (SameNameDatabaseException e) {
                     e.printStackTrace();
                 }
@@ -48,7 +56,7 @@ public class DataTest {
             if (command.equals("create table")) {
                 System.out.print("database > ");
                 String databaseName = scanner.nextLine();
-                TableManager tableManager = DatabaseManager.getInstance().getTableManager(databaseName);
+                TableManager tableManager = databaseManager.getTableManager(databaseName);
                 System.out.print("table > ");
                 String tableName = scanner.nextLine();
                 Table table = new Table();
@@ -85,7 +93,7 @@ public class DataTest {
             if (command.equals("insert data")) {
                 System.out.print("database > ");
                 String databaseName = scanner.nextLine();
-                TableManager tableManager = DatabaseManager.getInstance().getTableManager(databaseName);
+                TableManager tableManager = databaseManager.getTableManager(databaseName);
                 System.out.print("table > ");
                 String tableName = scanner.nextLine();
                 TableDataManager tableDataManager = tableManager.getTableDataManager(tableName);
@@ -123,7 +131,7 @@ public class DataTest {
             if (command.equals("select data")) {
                 System.out.print("database > ");
                 String databaseName = scanner.nextLine();
-                TableManager tableManager = DatabaseManager.getInstance().getTableManager(databaseName);
+                TableManager tableManager = databaseManager.getTableManager(databaseName);
                 if (tableManager == null) {
                     System.out.println("数据库不存在");
                 }
@@ -172,7 +180,7 @@ public class DataTest {
             if (command.equals("select tables")) {
                 System.out.print("database > ");
                 String databaseName = scanner.nextLine();
-                TableManager tableManager = DatabaseManager.getInstance().getTableManager(databaseName);
+                TableManager tableManager = databaseManager.getTableManager(databaseName);
                 System.out.println(tableManager.getTables());
             }
 
@@ -191,7 +199,7 @@ public class DataTest {
                     newDatabase.setFilePath(filePath);
                 }
                 try {
-                    DatabaseManager.getInstance().updateDatabase(originDatabase, newDatabase);
+                    databaseManager.updateDatabase(originDatabase, newDatabase);
                 } catch (NoNameDatabaseException e) {
                     e.printStackTrace();
                 }
@@ -201,7 +209,7 @@ public class DataTest {
                 System.out.print("database > ");
                 String databaseName = scanner.nextLine();
                 try {
-                    DatabaseManager.getInstance().deleteDatabase(databaseName);
+                    databaseManager.deleteDatabase(databaseName);
                 } catch (NoNameDatabaseException e) {
                     e.printStackTrace();
                 }
@@ -210,7 +218,7 @@ public class DataTest {
             if (command.equals("delete table")) {
                 System.out.print("database > ");
                 String databaseName = scanner.nextLine();
-                TableManager tableManager = DatabaseManager.getInstance().getTableManager(databaseName);
+                TableManager tableManager = databaseManager.getTableManager(databaseName);
                 System.out.print("table > ");
                 String tableName = scanner.nextLine();
                 try {
@@ -223,7 +231,7 @@ public class DataTest {
             if (command.equals("delete data")) {
                 System.out.print("database > ");
                 String databaseName = scanner.nextLine();
-                TableManager tableManager = DatabaseManager.getInstance().getTableManager(databaseName);
+                TableManager tableManager = databaseManager.getTableManager(databaseName);
                 System.out.print("table > ");
                 String tableName = scanner.nextLine();
                 TableDataManager tableDataManager = tableManager.getTableDataManager(tableName);
@@ -266,7 +274,7 @@ public class DataTest {
             if (command.equals("update data")) {
                 System.out.print("database > ");
                 String databaseName = scanner.nextLine();
-                TableManager tableManager = DatabaseManager.getInstance().getTableManager(databaseName);
+                TableManager tableManager = databaseManager.getTableManager(databaseName);
                 System.out.print("table > ");
                 String tableName = scanner.nextLine();
                 TableDataManager tableDataManager = tableManager.getTableDataManager(tableName);
@@ -337,7 +345,7 @@ public class DataTest {
             if (command.equals("create index")) {
                 System.out.print("database > ");
                 String databaseName = scanner.nextLine();
-                TableManager tableManager = DatabaseManager.getInstance().getTableManager(databaseName);
+                TableManager tableManager = databaseManager.getTableManager(databaseName);
                 System.out.print("table > ");
                 String tableName = scanner.nextLine();
                 TableData tableData = new TableData();
@@ -358,7 +366,7 @@ public class DataTest {
             if (command.equals("delete index")) {
                 System.out.print("database > ");
                 String databaseName = scanner.nextLine();
-                TableManager tableManager = DatabaseManager.getInstance().getTableManager(databaseName);
+                TableManager tableManager = databaseManager.getTableManager(databaseName);
                 System.out.print("table > ");
                 String tableName = scanner.nextLine();
                 TableData tableData = new TableData();
