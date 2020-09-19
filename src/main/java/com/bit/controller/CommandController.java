@@ -5,7 +5,6 @@ import com.bit.handler.CommandHandler;
 import com.bit.handler.HandlerResult;
 import com.bit.response.CurrentDatabaseResponse;
 import com.bit.response.RunSqlResponse;
-import com.esotericsoftware.kryo.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 /**
  * @author aerfafish
@@ -45,6 +43,7 @@ public class CommandController {
             runSqlResponse.setData(handlerResult.getData());
             runSqlResponse.setStatus(true);
         } catch (Exception e) {
+            runSqlResponse.setMessage(e.getMessage());
             runSqlResponse.setStatus(false);
         }
         runSqlResponse.setTime(sdf.format(date));

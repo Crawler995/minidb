@@ -3,6 +3,7 @@ package com.bit.api.manager;
 import com.bit.constance.DBConfig;
 import com.bit.exception.NoNameTableException;
 import com.bit.exception.SameNameTableException;
+import com.bit.model.ColumnInfo;
 import com.bit.model.Table;
 import com.bit.model.TableInfo;
 import com.bit.utils.FileUtil;
@@ -11,6 +12,7 @@ import com.bit.utils.KryoUtil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +40,7 @@ public class TableManager {
 
     TableInfo tableInfo = null;
 
-    public TableDataManager getTableDataManager(String tableName) {
+    public TableDataManager getTableDataManager(String tableName) throws Exception {
         TableDataManager tableDataManager = tableCache.get(tableName);
         if (tableDataManager == null) {
             for (Table table : tableInfo.getTables()) {
@@ -48,12 +50,23 @@ public class TableManager {
                 }
             }
         }
+        if (tableDataManager == null) {
+            throw new Exception("不存在对应的表");
+        }
         return tableDataManager;
     }
 
-    public void createTable(Table table) throws SameNameTableException {
+    public void createTable(Table table) throws Exception {
         if (containTable(table.getTableName())) {
             throw new SameNameTableException("已经有对应表，无法创建");
+        }
+        if (table.getColumnInfo().size() == 0) {
+            throw new Exception("请添加至少一列");
+        }
+        for (ColumnInfo columnInfo : table.getColumnInfo()) {
+            if (columnInfo.getColumnName() == null) {
+                throw new Exception("缺少列名，请指定");
+            }
         }
         if (table.getFilePath() == null) {
             table.setFilePath(DBConfig.TABLE_POSITION + "/" + databaseName + "/" + table.getTableName());
@@ -100,11 +113,19 @@ public class TableManager {
      *
      * @return
      */
-    public List<Table> getTables() {
-        return tableInfo.getTables();
+    public List<String> getTables() {
+        List<String> tables = new ArrayList<>();
+        for (Table table : tableInfo.getTables()) {
+            String tableName = table.getTableName();
+            if (tableName != null && !"".equals(tableName)) {
+                tables.add(tableName);
+            }
+        }
+        return tables;
     }
 
     public void createIndex(String tableName, String columnName, String filePath) throws Exception {
+
         getTableDataManager(tableName).createIndex(columnName, filePath);
         storeToFile();
     }

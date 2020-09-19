@@ -14,6 +14,7 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,19 +92,6 @@ public class DatabaseManager {
         storeToFile();
     }
 
-    public List<Table> getTables(String databaseName) throws NoNameDatabaseException {
-        Database database = getDatabase(databaseName);
-        if (database == null) {
-            throw new NoNameDatabaseException("不存在该数据库，无法查询");
-        }
-        // 如果当前存在该数据库
-        TableManager tableManager = databaseCache.get(databaseName);
-        if (tableManager == null) {
-            tableManager = new TableManager(databaseName, database.getFilePath());
-        }
-        return tableManager.getTables();
-    }
-
     public void storeToFile() {
         byte[] bytes = KryoUtil.serialize(databaseInfo);
         FileOutputStream fileOutputStream = FileUtil.getFileOutputStream(DBConfig.DATABASE_CONFIG);
@@ -111,7 +99,18 @@ public class DatabaseManager {
         FileUtil.closeOutputSteam(fileOutputStream);
     }
 
-    public TableManager getTableManager(String databaseName) {
+    public List<String> showDatabases() {
+        List<String> databases = new ArrayList<>();
+        for (Database database : databaseInfo.getDatabases()) {
+            String databaseName = database.getDatabaseName();
+            if (databaseName != null && !"".equals(databaseName)) {
+                databases.add(databaseName);
+            }
+        }
+        return databases;
+    }
+
+    public TableManager getTableManager(String databaseName) throws Exception {
         TableManager tableManager = databaseCache.get(databaseName);
         if (tableManager == null) {
             for (Database database : databaseInfo.getDatabases()) {
@@ -120,6 +119,9 @@ public class DatabaseManager {
                     databaseCache.put(databaseName, tableManager);
                 }
             }
+        }
+        if (tableManager == null) {
+            throw new Exception("不存在该数据库");
         }
         return tableManager;
     }

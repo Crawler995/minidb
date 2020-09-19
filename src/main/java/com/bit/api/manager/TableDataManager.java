@@ -269,7 +269,7 @@ public class TableDataManager {
                 return;
             }
         }
-
+        throw new Exception("不存在该列");
     }
 
     public void deleteIndex(String columnName) throws Exception {
@@ -286,6 +286,7 @@ public class TableDataManager {
                 return;
             }
         }
+        throw new Exception("不存在该列");
     }
 
     private String getIndex(TableData tableData) {
