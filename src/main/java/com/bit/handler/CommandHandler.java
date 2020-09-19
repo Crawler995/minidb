@@ -7,6 +7,7 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.RuleNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,23 +16,11 @@ import java.util.List;
  * @author aerfafish
  * @date 2020/9/7 3:38 下午
  */
+@Component
 public class CommandHandler {
-    private CommandHandler() {}
+    public CommandHandler() {}
 
-    private static CommandHandler commandHandler = null;
-
-    public static CommandHandler getInstance() {
-        if (commandHandler == null) {
-            synchronized (CommandHandler.class) {
-                if(commandHandler == null) {
-                    commandHandler = new CommandHandler();
-                }
-            }
-        }
-        return commandHandler;
-    }
-
-    public void handle(String command) {
+    public HandlerResult handle(String command) {
         System.out.println("处理命令：" + command);
         if ("exit".equals(command)) {
             System.exit(0);
@@ -59,5 +48,7 @@ public class CommandHandler {
         /**
          * analyse commandContents here
          */
+
+        return null;
     }
 }

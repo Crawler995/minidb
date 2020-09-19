@@ -1,4 +1,4 @@
-package com.bit.api.table;
+package com.bit.api.manager;
 
 import com.bit.constance.DBConfig;
 import com.bit.model.Database;
@@ -8,7 +8,9 @@ import com.bit.exception.SameNameDatabaseException;
 import com.bit.model.Table;
 import com.bit.utils.FileUtil;
 import com.bit.utils.KryoUtil;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -20,26 +22,26 @@ import java.util.Map;
  * @author aerfafish
  * @date 2020/9/15 6:53 下午
  */
+@Component
 public class DatabaseManager {
 
-    private DatabaseManager() {}
-
-    private static DatabaseManager databaseManager = null;
+    public DatabaseManager() {}
 
     private static DatabaseInfo databaseInfo = null;
 
     private static Map<String, TableManager> databaseCache = new HashMap<>();
 
-    public static DatabaseManager getInstance() {
-        if (databaseManager == null) {
-            synchronized (DatabaseManager.class) {
-                if (databaseManager == null) {
-                    databaseManager = new DatabaseManager();
-                    databaseManager.initConfig();
-                }
-            }
+    @PostConstruct
+    public void initConfig() {
+        FileInputStream fileInputStream = FileUtil.getFileInputStream(DBConfig.DATABASE_CONFIG);
+        // todo: buff size
+        try {
+            DatabaseManager.databaseInfo = (DatabaseInfo) KryoUtil.deserialize(fileInputStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+            databaseInfo = new DatabaseInfo();
         }
-        return databaseManager;
+        FileUtil.closeInputSteam(fileInputStream);
     }
 
     public void createDatabase(Database database) throws SameNameDatabaseException {
@@ -51,9 +53,10 @@ public class DatabaseManager {
         if (filePath == null) {
             filePath = DBConfig.DATABASE_POSITION+"/"+database.getDatabaseName();
         }
-        TableManager tableManager = new TableManager(filePath);
+        database.setFilePath(filePath);
+        TableManager tableManager = new TableManager(database.getDatabaseName(), filePath);
         databaseCache.put(database.getDatabaseName(), tableManager);
-        databaseInfo.getDatabases().add(new Database(database.getDatabaseName(), filePath));
+        databaseInfo.getDatabases().add(database);
         storeToFile();
     }
 
@@ -64,6 +67,9 @@ public class DatabaseManager {
             throw new NoNameDatabaseException("不存在该数据库，无法修改");
         }
         // 修改全局储存文件中的数据库名
+        if (newDatabase.getFilePath() == null) {
+            newDatabase.setFilePath(database.getFilePath());
+        }
         databaseInfo.getDatabases().add(newDatabase);
         TableManager tableManager = databaseCache.remove(originDatabase.getDatabaseName());
         databaseCache.put(newDatabase.getDatabaseName(), tableManager);
@@ -76,6 +82,7 @@ public class DatabaseManager {
         if (database == null) {
             throw new NoNameDatabaseException("不存在该数据库，无法删除");
         }
+        // todo:删除数据库中的表和数据
         String filePath = database.getFilePath();
         File file = new File(filePath);
         if (file.exists()) {
@@ -92,7 +99,7 @@ public class DatabaseManager {
         // 如果当前存在该数据库
         TableManager tableManager = databaseCache.get(databaseName);
         if (tableManager == null) {
-            tableManager = new TableManager(database.getFilePath());
+            tableManager = new TableManager(databaseName, database.getFilePath());
         }
         return tableManager.getTables();
     }
@@ -104,17 +111,20 @@ public class DatabaseManager {
         FileUtil.closeOutputSteam(fileOutputStream);
     }
 
-    public void initConfig() {
-        FileInputStream fileInputStream = FileUtil.getFileInputStream(DBConfig.DATABASE_CONFIG);
-        // todo: buff size
-        try {
-            DatabaseManager.databaseInfo = (DatabaseInfo) KryoUtil.deserialize(fileInputStream);
-        } catch (Exception e) {
-//            e.printStackTrace();
-            databaseInfo = new DatabaseInfo();
+    public TableManager getTableManager(String databaseName) {
+        TableManager tableManager = databaseCache.get(databaseName);
+        if (tableManager == null) {
+            for (Database database : databaseInfo.getDatabases()) {
+                if (database.getDatabaseName().equals(databaseName)) {
+                    tableManager = new TableManager(databaseName, database.getFilePath());
+                    databaseCache.put(databaseName, tableManager);
+                }
+            }
         }
-        FileUtil.closeInputSteam(fileInputStream);
+        return tableManager;
     }
+
+
 
     private Boolean containDatabase(String databaseName) {
         List<Database> databases = databaseInfo.getDatabases();

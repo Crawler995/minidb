@@ -19,5 +19,7 @@ public class DBConfig {
 
     public static String TABLE_POSITION = PathUtil.getSystemAdaptedPath(DB_POSITION_STR + "/table");
 
+    public static String Index_POSITION = PathUtil.getSystemAdaptedPath(DB_POSITION_STR + "/index");
+
     public static String COLUMN_POSITION = PathUtil.getSystemAdaptedPath(DB_POSITION_STR + "/column");
 }

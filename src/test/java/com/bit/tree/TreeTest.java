@@ -14,33 +14,6 @@ public class TreeTest {
     public static void main(String[] args) {
         BplusTree tree = null;
         Scanner scanner = new Scanner(System.in);
-
-//        tree.insert(new Point(5L, 5L));
-//        tree.insert(new Point(3L, 3L));
-//        tree.insert(new Point(4L, 2L));
-//        tree.insert(new Point(2L, 3L));
-//        tree.insert(new Point(5L, 5L));
-//        tree.insert(new Point(3L, 3L));
-//        tree.insert(new Point(4L, 2L));
-//        tree.insert(new Point(2L, 3L));
-//        tree.insert(new Point(5L, 5L));
-//        tree.insert(new Point(3L, 3L));
-//        tree.insert(new Point(4L, 2L));
-//        tree.insert(new Point(2L, 3L));
-//        tree.insert(new Point(5L, 5L));
-//        tree.insert(new Point(3L, 3L));
-//        tree.insert(new Point(4L, 2L));
-//        tree.insert(new Point(2L, 3L));
-//        tree.insert(new Point(5L, 5L));
-//        tree.insert(new Point(3L, 3L));
-//        tree.insert(new Point(4L, 2L));
-//        tree.insert(new Point(2L, 3L));
-//        tree.insert(new Point(5L, 5L));
-//        tree.insert(new Point(3L, 3L));
-//        tree.insert(new Point(4L, 2L));
-//        tree.insert(new Point(2L, 3L));
-//        tree.insert(new Point(5L, 5L));
-
         while (true) {
             System.out.print("db > ");
             //输入命令

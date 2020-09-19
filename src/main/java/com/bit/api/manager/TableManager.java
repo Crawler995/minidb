@@ -1,4 +1,4 @@
-package com.bit.api.table;
+package com.bit.api.manager;
 
 import com.bit.constance.DBConfig;
 import com.bit.exception.NoNameTableException;
@@ -24,25 +24,43 @@ public class TableManager {
     public TableManager() {
     }
 
-    public TableManager(String filePath) {
+    public TableManager(String databaseName, String filePath) {
         this.tableInfoPath = filePath;
+        this.databaseName = databaseName;
         initTableInfo();
     }
 
     private String tableInfoPath = "";
 
+    private String databaseName = "";
+
     private Map<String, TableDataManager> tableCache = new HashMap<>();
 
     TableInfo tableInfo = null;
+
+    public TableDataManager getTableDataManager(String tableName) {
+        TableDataManager tableDataManager = tableCache.get(tableName);
+        if (tableDataManager == null) {
+            for (Table table : tableInfo.getTables()) {
+                if (table.getTableName().equals(tableName)) {
+                    tableDataManager = new TableDataManager(table);
+                    tableCache.put(tableName, tableDataManager);
+                }
+            }
+        }
+        return tableDataManager;
+    }
 
     public void createTable(Table table) throws SameNameTableException {
         if (containTable(table.getTableName())) {
             throw new SameNameTableException("已经有对应表，无法创建");
         }
-        String filePath = table.getFilePath();
-        if (filePath == null) {
-            filePath = DBConfig.TABLE_POSITION+"/"+table.getTableName();
+        if (table.getFilePath() == null) {
+            table.setFilePath(DBConfig.TABLE_POSITION + "/" + databaseName + "/" + table.getTableName());
         }
+        TableDataManager tableDataManager = new TableDataManager(table);
+        tableCache.put(table.getTableName(), tableDataManager);
+        tableInfo.getTables().add(table);
         // 创建ColumnManager
         storeToFile();
     }
@@ -53,6 +71,7 @@ public class TableManager {
         if (table == null) {
             throw new NoNameTableException("不存在该表，无法删除");
         }
+        // todo: 删除数据
         String filePath = table.getFilePath();
         File file = new File(filePath);
         if (file.exists()) {
@@ -83,6 +102,16 @@ public class TableManager {
      */
     public List<Table> getTables() {
         return tableInfo.getTables();
+    }
+
+    public void createIndex(String tableName, String columnName, String filePath) throws Exception {
+        getTableDataManager(tableName).createIndex(columnName, filePath);
+        storeToFile();
+    }
+
+    public void deleteIndex(String tableName, String columnName) throws Exception {
+        getTableDataManager(tableName).deleteIndex(columnName);
+        storeToFile();
     }
 
     private void storeToFile() {
@@ -126,15 +155,15 @@ public class TableManager {
     private void initTableInfo() {
         File file = new File(tableInfoPath);
         if (!file.exists() || file.length() == 0) {
-            file.mkdir();
-            return;
+            FileUtil.createNewFile(tableInfoPath);
         }
         // 读取该数据库中数据
         FileInputStream fileInputStream = FileUtil.getFileInputStream(tableInfoPath);
         try {
             tableInfo = (TableInfo) KryoUtil.deserialize(fileInputStream);
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
+            tableInfo = new TableInfo();
         }
     }
 }

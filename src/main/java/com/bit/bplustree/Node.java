@@ -150,11 +150,16 @@ public class Node extends AbstractNode {
     public void updatePoint(Comparable key, Long value, Long newValue, BplusTree tree) {
         for (int i = 0; i < children.size(); i++) {
             if (children.get(i).getKey().compareTo(key) >= 0) {
-                tree.getNode(children.get(i - 1).getValue()).updatePoint(key, value, newValue, tree);
+                AbstractNode node = tree.getNode(children.get(i - 1).getValue());
+                node.updatePoint(key, value, newValue, tree);
+                return;
+            }
+            if (i == children.size() - 1) {
+                AbstractNode node = tree.getNode(children.get(i).getValue());
+                node.updatePoint(key, value, newValue, tree);
                 return;
             }
         }
-        tree.getNode(children.get(children.size() - 1).getValue()).updatePoint(key, value, newValue, tree);
     }
 
     public Boolean getExtraNode(Long value, BplusTree tree) {

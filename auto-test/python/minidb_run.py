@@ -30,7 +30,9 @@ def __get_available_output_from_raw_output(raw_output):
     ignored_outputs = [
         'db > ',
         'key > ',
-        'value > '
+        'value > ',
+        'originValue > ',
+        'newValue > '
     ]
 
     available_output = raw_output

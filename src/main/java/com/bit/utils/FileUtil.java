@@ -12,7 +12,7 @@ public class FileUtil {
         try {
             File file = new File(path);
             if (!file.exists()) {
-                file.mkdir();
+                createNewFile(path);
             }
             return new FileInputStream(path);
         } catch (FileNotFoundException e) {
@@ -20,6 +20,7 @@ public class FileUtil {
         }
         return null;
     }
+
 
     public static void closeInputSteam(InputStream inputStream) {
         try {
@@ -32,10 +33,16 @@ public class FileUtil {
     }
 
     public static FileOutputStream getFileOutputStream(String path) {
+        return getFileOutputStream(path, true);
+    }
+
+    public static FileOutputStream getFileOutputStream(String path, Boolean isCover) {
         try {
             File file = new File(path);
-            file.mkdir();
-            return new FileOutputStream(path);
+            if (!file.exists()) {
+                createNewFile(path);
+            }
+            return new FileOutputStream(path, !isCover);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -53,11 +60,18 @@ public class FileUtil {
     }
 
     public static byte[] getFileByte(String filePath, Long num) {
+        return getFileByte(filePath, num, 4096);
+    }
+
+    public static byte[] getFileByte(String filePath, Long num, int pageSize) {
         RandomAccessFile randomAccessFile = null;
-        byte[] bytes = new byte[4096];
+        byte[] bytes = new byte[Math.toIntExact(pageSize)];
         try {
+            if (!new File(filePath).exists()) {
+                FileUtil.createNewFile(filePath);
+            }
             randomAccessFile = new RandomAccessFile(filePath, "r");
-            randomAccessFile.seek(num*4096);
+            randomAccessFile.seek(num * pageSize);
             randomAccessFile.read(bytes);
         } catch (Exception e) {
             e.printStackTrace();
@@ -74,10 +88,14 @@ public class FileUtil {
     }
 
     public static void writeFileByte(String filePath, Long num, byte[] bytes) {
+        writeFileByte(filePath, num, bytes, 4096);
+    }
+
+    public static void writeFileByte(String filePath, Long num, byte[] bytes, int pageSize) {
         RandomAccessFile randomAccessFile = null;
         try {
             randomAccessFile = new RandomAccessFile(filePath, "rw");
-            randomAccessFile.seek(num*4096);
+            randomAccessFile.seek(num * pageSize);
             randomAccessFile.write(bytes);
         } catch (Exception e) {
             e.printStackTrace();
@@ -98,6 +116,16 @@ public class FileUtil {
         }
         try {
             fileOutputStream.write(bytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void createNewFile(String path) {
+        File file = new File(path);
+        try {
+            file.getParentFile().mkdirs();
+            file.createNewFile();
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -2,6 +2,7 @@ package com.bit.model;
 
 import lombok.Data;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -12,12 +13,7 @@ import java.util.Map;
 public class TableData {
 
     /**
-     * id
-     */
-    private Long id;
-
-    /**
      * 列名和对应value的map集合
      */
-    private Map<String, Object> data;
+    private Map<String, Object> data = new HashMap<>();
 }

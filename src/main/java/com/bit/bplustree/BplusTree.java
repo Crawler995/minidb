@@ -50,6 +50,9 @@ public class BplusTree {
         this.leafOrder = leafOrder;
 
         File file = new File(filePath);
+        if (!file.exists()) {
+            FileUtil.createNewFile(filePath);
+        }
         long size = file.length();
         // 创建根节点
         if (size == 0) {
