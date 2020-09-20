@@ -43,7 +43,7 @@ public class CommandController {
             runSqlResponse.setData(handlerResult.getData());
             runSqlResponse.setStatus(true);
         } catch (Exception e) {
-            runSqlResponse.setMessage(e.getMessage());
+            runSqlResponse.setMessage(e.getMessage() == null ? "" : e.getMessage());
             runSqlResponse.setStatus(false);
         }
         runSqlResponse.setTime(sdf.format(date));
