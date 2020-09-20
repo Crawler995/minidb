@@ -321,6 +321,7 @@ public class DataTest {
 
     @Test
     public void insertTest() throws Exception {
+        long startTime = System.currentTimeMillis();
         apiManager.useDatabase("bit");
         for (long i = 0; i < 200000; i++) {
             Update update = new Update();
@@ -329,6 +330,8 @@ public class DataTest {
             update.set("age", i%20+"");
             apiManager.insertData(update, "student");
         }
+        long endTime = System.currentTimeMillis();
+        System.out.println("花费时间：" + (endTime-startTime));
 
     }
 }

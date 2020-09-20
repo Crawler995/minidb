@@ -435,7 +435,7 @@ public class TableDataManager {
     public void transferTableData(TableData tableData) throws Exception {
         for (Map.Entry<String, Comparable> entry : tableData.getData().entrySet()) {
             DataType type = getColumnInfo(entry.getKey()).getType();
-            entry.setValue(transferString(entry.getKey(), type));
+            entry.setValue(transferString((String) entry.getValue(), type));
         }
     }
 
