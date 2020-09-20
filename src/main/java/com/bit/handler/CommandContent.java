@@ -29,6 +29,7 @@ public class CommandContent {
     IndexName indexName = null;// create index
 
     List<SubCommandOfWhere> subCommandOfWheres = new ArrayList<>();
+    List<SubCommandOfWhere> updateElement = new ArrayList<>();
 
     List<String> insertedColumn = new ArrayList<>();
     List<List<String>> insertedColumnValue = new ArrayList<>();
@@ -111,6 +112,11 @@ public class CommandContent {
     public void addTempString(String tempString) {
         this.tempString.add(tempString);
     }
+    public void addTempString(List<String> tempString){
+        if(tempString.size() > 0 ){
+            this.tempString.addAll(tempString);
+        }
+    }
     public List<String> getTempString(){
         return this.tempString;
     }
@@ -148,9 +154,13 @@ public class CommandContent {
     public void addSubCommandOfWheres(ColumnName columnName,String operation,ColumnName value){
         subCommandOfWheres.add(new SubCommandOfWhere(columnName,operation,value));
     }
-    public void addSubCommandOfWheres(ColumnName columnName,String operation,String value_first,String value_second){
-        subCommandOfWheres.add(new SubCommandOfWhere(columnName,operation,value_first,value_second));
+    public void addSubCommandOfWheres(ColumnName columnName,String operation,String valueFirst,String valueSecond){
+        subCommandOfWheres.add(new SubCommandOfWhere(columnName,operation,valueFirst,valueSecond));
     }
+    public void addSubCommandOfWheres(String valueFirst,String operation, String valueSecond){
+        subCommandOfWheres.add(new SubCommandOfWhere(valueFirst,operation,valueSecond));
+    }
+
     public void addSubCommandOfWheres(SubCommandOfWhere subCommandOfWhere){
         subCommandOfWheres.add(subCommandOfWhere);
     }
@@ -159,5 +169,19 @@ public class CommandContent {
     }
     public List<SubCommandOfWhere> getSubCommandOfWheres() {
         return subCommandOfWheres;
+    }
+
+    public void addUpdateElement(ColumnName columnName,String operation,String value){
+        updateElement.add(new SubCommandOfWhere(columnName,operation,value));
+    }
+    public void addUpdateElement(ColumnName columnName,String operation,ColumnName columnNameR){
+        updateElement.add(new SubCommandOfWhere(columnName,operation,columnNameR));
+    }
+    public void addUpdateElement(SubCommandOfWhere updateElement){
+        this.updateElement.add(updateElement);
+    }
+
+    public List<SubCommandOfWhere> getUpdateElement() {
+        return updateElement;
     }
 }

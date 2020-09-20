@@ -1,34 +1,41 @@
 package com.bit.handler;
 
 public class SubCommandOfWhere {
-    public enum Category{
-        CR,SR
-    }
-    ColumnName columnName_left = null;
-    ColumnName columnName_right = null;
+    Boolean rightIsColumn = false;
+    Boolean leftIsValue = false;
+    ColumnName columnNameLeft = null;
+    ColumnName columnNameRight = null;
     String operation;
-    String value_first = null;
-    String value_second = null;
+    String valueFirst = null;
+    String valueSecond = null;
 
 
-    SubCommandOfWhere(ColumnName columnName_left,String operation,ColumnName columnName_right){
+    SubCommandOfWhere(ColumnName columnNameLeft, String operation, ColumnName columnNameRight){
         this.operation = operation;
-        this.columnName_left = columnName_left;
-        this.columnName_right = columnName_right;
+        this.columnNameLeft = columnNameLeft;
+        this.columnNameRight = columnNameRight;
+        rightIsColumn = true;
+    }
+
+    SubCommandOfWhere(String valueFirst,String operation,String valueSecond){
+        this.valueFirst = valueFirst;
+        this.valueSecond = valueSecond;
+        this.operation = operation;
+        leftIsValue = true;
     }
 
 
     SubCommandOfWhere(ColumnName columnName,String operation,String value){
-        this.columnName_left = columnName;
+        this.columnNameLeft = columnName;
         this.operation = operation;
-        this.value_first = value;
+        this.valueFirst = value;
     }
 
     SubCommandOfWhere(ColumnName columnName,String operation,String value,String value_1){
-        this.columnName_left = columnName;
+        this.columnNameLeft = columnName;
         this.operation = operation;
-        this.value_first = value;
-        this.value_second = value_1;
+        this.valueFirst = value;
+        this.valueSecond = value_1;
     }
 
 }
