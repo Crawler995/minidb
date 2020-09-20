@@ -282,6 +282,7 @@ public class CommandHandler {
                     break;
             }
             //handlerResult here
+            return handlerResult;
         }
 
 
