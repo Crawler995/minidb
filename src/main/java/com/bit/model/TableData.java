@@ -15,5 +15,5 @@ public class TableData {
     /**
      * 列名和对应value的map集合
      */
-    private Map<String, Object> data = new HashMap<>();
+    private Map<String, Comparable> data = new HashMap<>();
 }

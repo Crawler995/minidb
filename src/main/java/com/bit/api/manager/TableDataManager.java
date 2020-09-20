@@ -74,7 +74,7 @@ public class TableDataManager {
         long length = new File(dataFilePath).length();
         String indexName = getIndex(query);
         IndexManager indexManager = null;
-        transferUpdate(query);
+        transferQuery(query);
         IndexQuery indexQuery = QueryUtil.getLowKey(query.getCriteria().get(indexName));
         if (indexQuery.getLowKey() != null) {
             for (ColumnInfo columnInfo : table.getColumnInfo()) {
@@ -136,7 +136,7 @@ public class TableDataManager {
         long length = new File(dataFilePath).length();
         String indexName = getIndex(query);
         IndexManager indexManager = null;
-        transferUpdate(query);
+        transferQuery(query);
         IndexQuery indexQuery = QueryUtil.getLowKey(query.getCriteria().get(indexName));
         if (indexQuery.getLowKey() != null) {
             for (ColumnInfo columnInfo : table.getColumnInfo()) {
@@ -180,14 +180,16 @@ public class TableDataManager {
         return selectTableDataList;
     }
 
-    public void update(Update update) throws Exception {
+    public void update(Query query, Update update) throws Exception {
         List<TableData> selectTableDataList = new LinkedList<>();
         Set<Long> pageNumList = new HashSet<>();
         long length = new File(dataFilePath).length();
         String indexName = getIndex(update);
         IndexManager indexManager = null;
         transferUpdate(update);
-        if (indexName != null) {
+        transferQuery(query);
+        IndexQuery indexQuery = QueryUtil.getLowKey(query.getCriteria().get(indexName));
+        if (indexQuery.getLowKey() != null) {
             for (ColumnInfo columnInfo : table.getColumnInfo()) {
                 if (columnInfo.getColumnName().equals(indexName)) {
                     //建立索引
@@ -198,7 +200,7 @@ public class TableDataManager {
                     }
                     Comparable comparable = update.getModifyData().get(columnInfo.getColumnName());
                     indexCache.put(columnInfo.getColumnName(), indexManager);
-                    pageNumList = indexManager.select(comparable);
+                    pageNumList = indexManager.select(indexQuery);
                 }
 
             }
@@ -222,7 +224,7 @@ public class TableDataManager {
             } catch (Exception ignored) {
             }
             for (TableData tableData : tableDataList) {
-                if (compare(tableData, update)) {
+                if (compare(tableData, query)) {
                     updateTableData(tableData, update);
                 }
             }
@@ -296,7 +298,7 @@ public class TableDataManager {
     }
 
     private String getIndex(TableData tableData) throws Exception {
-        for (Map.Entry<String, Object> entry : tableData.getData().entrySet()) {
+        for (Map.Entry<String, Comparable> entry : tableData.getData().entrySet()) {
             if (entry.getKey() != null && Objects.requireNonNull(getColumnInfo(entry.getKey())).getHasIndex()) {
                 return entry.getKey();
             }
@@ -328,7 +330,7 @@ public class TableDataManager {
         if (tableData2 == null) {
             return true;
         }
-        for (Map.Entry<String, Object> entry : tableData2.getData().entrySet()) {
+        for (Map.Entry<String, Comparable> entry : tableData2.getData().entrySet()) {
             if (!tableData1.getData().get(entry.getKey()).equals(entry.getValue())) {
                 return false;
             }
@@ -399,7 +401,7 @@ public class TableDataManager {
     }
 
     private void updateTableData(TableData target, TableData updateData) {
-        for (Map.Entry<String, Object> entry : updateData.getData().entrySet()) {
+        for (Map.Entry<String, Comparable> entry : updateData.getData().entrySet()) {
             if (entry.getValue() != null) {
                 target.getData().put(entry.getKey(), entry.getValue());
             }
@@ -442,14 +444,14 @@ public class TableDataManager {
         return null;
     }
 
-    private void transferUpdate(Query query) throws Exception {
+    private void transferQuery(Query query) throws Exception {
         for (Map.Entry<String, Criteria> entry : query.getCriteria().entrySet()) {
             DataType type = getColumnInfo(entry.getKey()).getType();
-            transferUpdate(entry.getValue(), type);
+            transferQuery(entry.getValue(), type);
         }
     }
 
-    private void transferUpdate(Criteria criteria, DataType type) {
+    private void transferQuery(Criteria criteria, DataType type) {
         if (criteria.getIsValue() != Criteria.NOT_SET) {
             criteria.setIsValue(transferObject(criteria.getIsValue(), type));
             return;

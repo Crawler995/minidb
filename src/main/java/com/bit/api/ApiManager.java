@@ -1,7 +1,6 @@
 package com.bit.api;
 
 import com.bit.api.manager.DatabaseManager;
-import com.bit.api.model.Criteria;
 import com.bit.api.model.Query;
 import com.bit.api.model.Update;
 import com.bit.model.Database;
@@ -63,7 +62,7 @@ public class ApiManager {
      * <filePath> 可以为空（最好直接为空） 会添加默认路径
      * @throws Exception
      */
-    public void saveDatabase(@NonNull Database database) throws Exception {
+    public void createDatabase(@NonNull Database database) throws Exception {
         databaseManager.createDatabase(database);
     }
 
@@ -107,7 +106,7 @@ public class ApiManager {
      * Table中的filePath可以不指定
      * @throws Exception
      */
-    public void createTables(@NonNull Table table) throws Exception {
+    public void createTable(@NonNull Table table) throws Exception {
         if (currentDatabase == null) {
             throw new Exception("未指定当前数据库");
         }
@@ -121,7 +120,7 @@ public class ApiManager {
      * todo:会同时删除对应的索引
      * @throws Exception
      */
-    public void deleteTables(@NonNull String tableName) throws Exception {
+    public void deleteTable(@NonNull String tableName) throws Exception {
         if (currentDatabase == null) {
             throw new Exception("未指定当前数据库");
         }
@@ -179,7 +178,7 @@ public class ApiManager {
         if (currentDatabase == null) {
             throw new Exception("未指定当前数据库");
         }
-        Map<String, Object> modifyData = update.getModifyData();
+        Map<String, Comparable> modifyData = update.getModifyData();
         if (modifyData == null || modifyData.size() == 0) {
             throw new Exception("未添加列");
         }
@@ -188,6 +187,15 @@ public class ApiManager {
         databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).insert(tableData);
     }
 
+    /**
+     * 删除满足查询条件的所有数据
+     * @param query
+     * @param tableName
+     * query中至少有一个Criteria 否则会全部删除
+     * 使用query.addCriteria(Criteria.where().is()).addCriteria(Criteria.where().lt()).addCriteria(Criteria.where().lt())
+     * ……
+     * @throws Exception
+     */
     public void deleteData(@NonNull Query query, @NonNull String tableName) throws Exception {
         if (currentDatabase == null) {
             throw new Exception("未指定当前数据库");
@@ -195,17 +203,35 @@ public class ApiManager {
         databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).delete(query);
     }
 
-    public void selectData(@NonNull Query query, @NonNull String tableName) throws Exception {
+    /**
+     * 查询数据
+     * @param query
+     * @param tableName
+     * query参数与上述一样
+     * @return
+     * @throws Exception
+     */
+    public List<TableData> selectData(@NonNull Query query, @NonNull String tableName) throws Exception {
         if (currentDatabase == null) {
             throw new Exception("未指定当前数据库");
         }
-        databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).select(query);
+        return databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).select(query);
     }
 
-
-    public static void main(String[] args) throws Exception {
-        Query query = new Query().addCriteria(Criteria.where("name").is("yhz")).addCriteria(Criteria.where("id").gt("3"));
-
+    /**
+     * 更新数据
+     * @param query
+     * @param update
+     * @param tableName
+     * query和update参数和上述一样
+     * @throws Exception
+     */
+    public void updateData(@NonNull Query query, @NonNull Update update, @NonNull String tableName) throws Exception {
+        if (currentDatabase == null) {
+            throw new Exception("未指定当前数据库");
+        }
+        databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).update(query, update);
     }
+
 
 }
