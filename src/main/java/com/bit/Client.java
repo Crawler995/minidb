@@ -9,7 +9,7 @@ import java.util.Scanner;
  * @date 2020/9/7 3:27 下午
  */
 public class Client {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         CommandHandler commandHandler = new CommandHandler();
         while (true) {
             System.out.print("db > ");

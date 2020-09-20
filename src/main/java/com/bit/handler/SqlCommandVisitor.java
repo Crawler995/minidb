@@ -1,6 +1,7 @@
 package com.bit.handler;
 
 import com.sun.org.apache.xml.internal.security.c14n.implementations.Canonicalizer11_OmitComments;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,14 +17,14 @@ public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
     @Override
     public CommandContent visitSqlStatement(MySqlParser.SqlStatementContext ctx) {
         rawCommand = ctx.getText();
-        if(rawCommand.equals("SHOW DATABASES")){
+        if(rawCommand.equals("SHOWDATABASES")){
             CommandContent content = new CommandContent();
             content.setOperation(CommandContent.Operation.showDatabases);
             content.setRawCommand(rawCommand);
             commandContents.add(content);
             return null;
         }
-        if(rawCommand.equals("SHOW TABLES")){
+        if(rawCommand.equals("SHOWTABLES")){
             CommandContent content = new CommandContent();
             content.setOperation(CommandContent.Operation.showTables);
             content.setRawCommand(rawCommand);
@@ -91,8 +92,6 @@ public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
         if(ctx.ifNotExists() != null){
             content.addConfig(ctx.ifNotExists().getText());
         }
-        String tableName;
-        String databaseName;
         content.addTableName(visit(ctx.tableName()).getTableNames());
         content.addTableInfo(visit(ctx.createDefinitions()).getTableCreateInfo());
         content.setRawCommand(rawCommand);
@@ -128,26 +127,7 @@ public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
             content.addConfig(ctx.ifExists().getText());
         }
         for(MySqlParser.TableNameContext c:  ctx.tables().tableName()){
-            String tableName;
-            String databaseName;
-            List<String> tempString = visit(c).getTempString();
-            switch(tempString.size()){
-                case 1:
-                    tableName = tempString.get(0);
-                    databaseName = null;
-                    break;
-                case 2:
-                    tableName = tempString.get(1);
-                    databaseName = tempString.get(0);
-                    break;
-                default:
-                    tableName = databaseName = null;
-                    /**
-                     * error!
-                     */
-                    break;
-            }
-            content.addTableName(tableName,null,databaseName);
+            content.addTableName(visit(c).getTableNames());
         }
         commandContents.add(content);
         return null;
@@ -193,8 +173,8 @@ public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
             content.addConfig(c.getText());
         }
         content.addColumnName(visit(ctx.selectElements()).getColumnNames());
-        content.addTableName(visit(ctx.fromClause()).getTableNames());
         CommandContent temp = visit(ctx.fromClause());
+        content.addTableName(temp.getTableNames());
         if(temp.getOperation() != null){
             content.setOperation(CommandContent.Operation.errorCommand);
         }
@@ -229,7 +209,12 @@ public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
         CommandContent content;
         List<String> columnNames = new ArrayList<>();
         if(ctx.columns != null){
-            for(MySqlParser.UidContext c : ctx.uidList(1).uid()){
+            int i = 0;
+            if(ctx.partitions != null){
+                i = 1;
+            }
+
+            for(MySqlParser.UidContext c : ctx.uidList(i).uid()){
                 String name = visit(c).getTempString(0);
                 columnNames.add(name);
             }
@@ -284,7 +269,7 @@ public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
         }
 
         if(ctx.expression() != null){
-
+            content.addSubCommandOfWheres(visit(ctx.expression()).getSubCommandOfWheres());
         }
 
         content.setOperation(CommandContent.Operation.update);
@@ -400,9 +385,11 @@ public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
     public CommandContent visitFromClause(MySqlParser.FromClauseContext ctx) {
         CommandContent content = new CommandContent();
         content.addTableName(visit(ctx.tableSources()).getTableNames());
-        content.addSubCommandOfWheres(visit(ctx.whereExpr).getSubCommandOfWheres());
-        if(content.getSubCommandOfWheres().size() == 0){
-            content.setOperation(CommandContent.Operation.errorCommand);
+        if(ctx.whereExpr != null){
+            content.addSubCommandOfWheres(visit(ctx.whereExpr).getSubCommandOfWheres());
+            if(content.getSubCommandOfWheres().size() == 0){
+                content.setOperation(CommandContent.Operation.errorCommand);
+            }
         }
         return content;
     }

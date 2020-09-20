@@ -38,4 +38,31 @@ public class SubCommandOfWhere {
         this.valueSecond = value_1;
     }
 
+    public String getOperation() {
+        return operation;
+    }
+
+    public ColumnName getColumnNameLeft() {
+        return columnNameLeft;
+    }
+
+    public ColumnName getColumnNameRight() {
+        return columnNameRight;
+    }
+
+    public String getValueFirst() {
+        return valueFirst;
+    }
+
+    public String getValueSecond() {
+        return valueSecond;
+    }
+
+    public Boolean getLeftIsValue() {
+        return leftIsValue;
+    }
+
+    public Boolean getRightIsColumn() {
+        return rightIsColumn;
+    }
 }
