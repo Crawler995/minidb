@@ -1,5 +1,14 @@
 package com.bit.handler;
 
+import com.bit.api.ApiManager;
+import com.bit.api.model.Criteria;
+import com.bit.api.model.Query;
+import com.bit.api.model.Update;
+import com.bit.constance.DataType;
+import com.bit.model.ColumnInfo;
+import com.bit.model.Database;
+import com.bit.model.Table;
+import com.bit.model.TableData;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -7,10 +16,13 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.RuleNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author aerfafish
@@ -18,9 +30,13 @@ import java.util.List;
  */
 @Component
 public class CommandHandler {
+
+    @Autowired
+    ApiManager apiManager;
+
     public CommandHandler() {}
 
-    public HandlerResult handle(String command) {
+    public HandlerResult handle(String command) throws Exception {
         System.out.println("处理命令：" + command);
         if ("exit".equals(command)) {
             System.exit(0);
@@ -42,12 +58,235 @@ public class CommandHandler {
         SqlCommandVisitor sqlCommandVisitor = new SqlCommandVisitor(commandContents);
         sqlCommandVisitor.visit(tree);
 
-        CommandContent content =  commandContents.get(0);
-        System.out.println("operation:" + content.getOperation().name() +"\nColumnName:" + content.getColumnNames().get(0).getColumnName() + "\nTableName:" + content.getTableNames().get(0).getTableName());
 
-        /**
-         * analyse commandContents here
-         */
+        for(CommandContent content : commandContents){
+            HandlerResult handlerResult = new HandlerResult();
+            List<String> columns = new ArrayList<>();
+            List<Object> data = new ArrayList<>();
+            switch (content.getOperation()) {
+                case errorCommand:
+                    break;
+                case createDatabase:
+                    apiManager.createDatabase(new Database(content.getDatabaseName(), null));
+                    break;
+                case createIndex:
+                    apiManager.createIndex(content.getIndexName().getTableName(), content.getIndexName().getColumnName());
+                    break;
+                case createTable:
+                    List<ColumnInfo> columnInfos = new ArrayList<>();
+                    List<TableCreateInfo> tableCreateInfos = content.getTableCreateInfo();
+                    for (TableCreateInfo tableCreateInfo : tableCreateInfos) {
+                        ColumnInfo columnInfo = new ColumnInfo();
+                        columnInfo.setColumnName(tableCreateInfo.getColumnName());
+                        String type = tableCreateInfo.getType();
+
+                        switch (type) {
+                            case "INT":
+                                columnInfo.setType(DataType.INT);
+                                break;
+                            case "LONG":
+                                columnInfo.setType(DataType.LONG);
+                                break;
+                            case "VARCHAR":
+                            case "CHAR":
+                                columnInfo.setType(DataType.STRING);
+                                break;
+                            default:
+                                columnInfo.setType(DataType.ERROR);
+                                break;
+                        }
+                    }
+
+                    Table table = new Table();
+                    table.setColumnInfo(columnInfos);
+                    table.setTableName(content.getTableNames().get(0).getTableName());
+                    apiManager.createTable(table);
+                    break;
+                case dropDatabase:
+                    apiManager.deleteDatabase(content.getDatabaseName());
+                    break;
+                case dropTable:
+                    for (int i = 0; i < content.getTableNames().size(); i++) {
+                        apiManager.deleteTable(content.getTableNames().get(i).getTableName());
+                    }
+                    break;
+
+                case dropIndex:
+                    String tableName = content.getIndexName().getTableName();
+                    String columnName = content.getIndexName().getColumnName();
+                    if (tableName != null && columnName != null) {
+                        apiManager.deleteIndex(tableName, columnName);
+                    }
+                    break;
+                case showDatabases:
+                    columns.add("Database Name");
+                    handlerResult.setColumns(columns);
+                    List<String> databases = apiManager.showDatabases();
+                    data.addAll(databases);
+                    handlerResult.setData(data);
+                    break;
+                case showTables:
+                    columns.add("Database Name");
+                    handlerResult.setColumns(columns);
+                    List<String> tables = apiManager.showTables();
+                    data.addAll(tables);
+                    handlerResult.setData(data);
+                    break;
+                case use:
+                    apiManager.useDatabase(content.getDatabaseName());
+                case insert:
+                    if (content.insertedColumn.size() == 0) {
+                        /**
+                         * api not supported
+                         */
+                        throw new Exception("insert into tableName values (...): no column names");
+                    }
+                    List<String> insertColumn = content.getInsertedColumn();
+                    for (List<String> insertValues : content.getInsertedColumnValue()) {
+                        if (insertColumn.size() != insertValues.size()) {
+                            throw new Exception("parse error");
+                        }
+                        Update update = new Update();
+                        for (int i = 0; i < insertColumn.size(); i++) {
+                            update.set(insertColumn.get(i), insertValues.get(i));
+                        }
+                        apiManager.insertData(update, content.getTableNames().get(0).getTableName());
+                    }
+                    break;
+                case delete:
+                    Query query = new Query();
+                    for (SubCommandOfWhere subCommandOfWhere : content.getSubCommandOfWheres()) {
+                        if (subCommandOfWhere.getRightIsColumn() || subCommandOfWhere.getLeftIsValue() || subCommandOfWhere.getValueSecond() != null) {
+                            throw new Exception("not supported yet");
+                        }
+                        columnName = subCommandOfWhere.getColumnNameLeft().getColumnName();
+                        String value = subCommandOfWhere.getValueFirst();
+                        String operate = subCommandOfWhere.getOperation();
+                        if (operate.equals(">")) {
+                            query.addCriteria(Criteria.where(columnName).gte(value));
+                        }
+                        if (operate.equals(">=")) {
+                            query.addCriteria(Criteria.where(columnName).lte(value));
+                        }
+                        if (operate.equals("=")) {
+                            query.addCriteria(Criteria.where(columnName).is(value));
+                        }
+                        if (operate.equals("<")) {
+                            query.addCriteria(Criteria.where(columnName).lt(value));
+                        }
+                        if (operate.equals("<=")) {
+                            query.addCriteria(Criteria.where(columnName).lte(value));
+                        }
+                        if (operate.equals("!=")) {
+                            query.addCriteria(Criteria.where(columnName).ne(value));
+                        }
+                    }
+                    apiManager.deleteData(query, content.getTableNames().get(0).getTableName());
+                    break;
+                case update:
+                    query = new Query();
+                    if (content.getSubCommandOfWheres().size() != 0) {
+                        for (SubCommandOfWhere subCommandOfWhere : content.getSubCommandOfWheres()) {
+                            if (subCommandOfWhere.getRightIsColumn() || subCommandOfWhere.getLeftIsValue() || subCommandOfWhere.getValueSecond() != null) {
+                                throw new Exception("not supported yet");
+                            }
+                            columnName = subCommandOfWhere.getColumnNameLeft().getColumnName();
+                            String value = subCommandOfWhere.getValueFirst();
+                            String operate = subCommandOfWhere.getOperation();
+                            if (operate.equals(">")) {
+                                query.addCriteria(Criteria.where(columnName).gte(value));
+                            }
+                            if (operate.equals(">=")) {
+                                query.addCriteria(Criteria.where(columnName).lte(value));
+                            }
+                            if (operate.equals("=")) {
+                                query.addCriteria(Criteria.where(columnName).is(value));
+                            }
+                            if (operate.equals("<")) {
+                                query.addCriteria(Criteria.where(columnName).lt(value));
+                            }
+                            if (operate.equals("<=")) {
+                                query.addCriteria(Criteria.where(columnName).lte(value));
+                            }
+                            if (operate.equals("!=")) {
+                                query.addCriteria(Criteria.where(columnName).ne(value));
+                            }
+                        }
+                    }
+                    Update update = new Update();
+                    for (SubCommandOfWhere updateElement : content.getUpdateElement()) {
+                        if (updateElement.getLeftIsValue() || updateElement.getRightIsColumn() || updateElement.getValueSecond() != null) {
+                            throw new Exception("not supported yet");
+                        }
+                        columnName = updateElement.getColumnNameLeft().getColumnName();
+                        String value = updateElement.getValueFirst();
+                        update.set(columnName, value);
+                    }
+
+                    apiManager.updateData(query, update, content.getTableNames().get(0).getTableName());
+                case select:
+                    query = new Query();
+                    if (content.getSubCommandOfWheres().size() != 0) {
+                        for (SubCommandOfWhere subCommandOfWhere : content.getSubCommandOfWheres()) {
+                            if (subCommandOfWhere.getRightIsColumn() || subCommandOfWhere.getLeftIsValue() || subCommandOfWhere.getValueSecond() != null) {
+                                throw new Exception("not supported yet");
+                            }
+                            columnName = subCommandOfWhere.getColumnNameLeft().getColumnName();
+                            String value = subCommandOfWhere.getValueFirst();
+                            String operate = subCommandOfWhere.getOperation();
+                            if (operate.equals(">")) {
+                                query.addCriteria(Criteria.where(columnName).gte(value));
+                            }
+                            if (operate.equals(">=")) {
+                                query.addCriteria(Criteria.where(columnName).lte(value));
+                            }
+                            if (operate.equals("=")) {
+                                query.addCriteria(Criteria.where(columnName).is(value));
+                            }
+                            if (operate.equals("<")) {
+                                query.addCriteria(Criteria.where(columnName).lt(value));
+                            }
+                            if (operate.equals("<=")) {
+                                query.addCriteria(Criteria.where(columnName).lte(value));
+                            }
+                            if (operate.equals("!=")) {
+                                query.addCriteria(Criteria.where(columnName).ne(value));
+                            }
+                        }
+                    }
+                    List<String> columnNames = new ArrayList<>();
+                    for(ColumnName name : content.getColumnNames()){
+                        columnNames.add(name.getColumnName());
+                    }
+                    List<TableData> tableDatas = apiManager.selectData(query, content.getTableNames().get(0).getTableName());
+                    if(tableDatas.size() > 0) {
+                        Set<String> keySet = tableDatas.get(0).getData().keySet();
+                        if (keySet.size() > 0) {
+                            if(columnNames.contains("*")) {
+                                columns = new ArrayList<>(keySet);
+                            }
+                            else{
+                                 columns = columnNames;
+                            }
+                            handlerResult.setColumns(columns);
+                            for(TableData tableData:tableDatas){
+                                List<Object> columnData = new ArrayList<>();
+                                for(String s : columns){
+                                    columnData.add(tableData.getData().get(s));
+                                }
+                                data.add(columnData);
+                            }
+                        }
+                        handlerResult.setData(data);
+                    }
+                    break;
+            }
+            //handlerResult here
+        }
+
+
+
+
 
         return null;
     }
