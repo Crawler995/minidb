@@ -39,7 +39,7 @@ public class DatabaseManager {
         try {
             DatabaseManager.databaseInfo = (DatabaseInfo) KryoUtil.deserialize(fileInputStream);
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             databaseInfo = new DatabaseInfo();
         }
         FileUtil.closeInputSteam(fileInputStream);

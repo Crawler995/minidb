@@ -12,8 +12,10 @@ import com.bit.model.Database;
 import com.bit.model.Table;
 import com.bit.model.TableData;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +26,7 @@ import java.util.Scanner;
  * @date 2020/9/17 1:02 上午
  */
 
+@RunWith(SpringRunner.class)
 @SpringBootTest
 public class DataTest {
 
@@ -68,7 +71,7 @@ public class DataTest {
                 while (true) {
                     System.out.print("columnName > ");
                     String columnName = scanner.nextLine();
-                    if (columnName.equals("exit")) {
+                    if (columnName.equals("")) {
                         break;
                     }
                     ColumnInfo columnInfo = new ColumnInfo();
@@ -100,7 +103,7 @@ public class DataTest {
                 while (true) {
                     System.out.print("columnName > ");
                     String columnName = scanner.nextLine();
-                    if (columnName.equals("exit")) {
+                    if (columnName.equals("")) {
                         break;
                     }
                     System.out.print("value > ");
@@ -121,7 +124,7 @@ public class DataTest {
                     while (true) {
                         System.out.print("columnName > ");
                         String columnName = scanner.nextLine();
-                        if (columnName.equals("exit")) {
+                        if (columnName.equals("")) {
                             break;
                         }
                         System.out.print("value > ");
@@ -129,10 +132,10 @@ public class DataTest {
                         System.out.print("operate > ");
                         String operate = scanner.nextLine();
                         if (operate.equals(">")) {
-                            query.addCriteria(Criteria.where(columnName).gte(value));
+                            query.addCriteria(Criteria.where(columnName).gt(value));
                         }
                         if (operate.equals(">=")) {
-                            query.addCriteria(Criteria.where(columnName).lte(value));
+                            query.addCriteria(Criteria.where(columnName).gte(value));
                         }
                         if (operate.equals("=")) {
                             query.addCriteria(Criteria.where(columnName).is(value));
@@ -168,7 +171,7 @@ public class DataTest {
                 newDatabase.setDatabaseName(newDatabaseName);
                 System.out.print("new database filePath > ");
                 String filePath = scanner.nextLine();
-                if (!filePath.equals("exit")) {
+                if (!filePath.equals("")) {
                     newDatabase.setFilePath(filePath);
                 }
                 try {
@@ -205,7 +208,7 @@ public class DataTest {
                 while (true) {
                     System.out.print("columnName > ");
                     String columnName = scanner.nextLine();
-                    if (columnName.equals("exit")) {
+                    if (columnName.equals("")) {
                         break;
                     }
                     System.out.print("value > ");
@@ -213,10 +216,10 @@ public class DataTest {
                     System.out.print("operate > ");
                     String operate = scanner.nextLine();
                     if (operate.equals(">")) {
-                        query.addCriteria(Criteria.where(columnName).gte(value));
+                        query.addCriteria(Criteria.where(columnName).gt(value));
                     }
                     if (operate.equals(">=")) {
-                        query.addCriteria(Criteria.where(columnName).lte(value));
+                        query.addCriteria(Criteria.where(columnName).gte(value));
                     }
                     if (operate.equals("=")) {
                         query.addCriteria(Criteria.where(columnName).is(value));
@@ -243,7 +246,7 @@ public class DataTest {
                 while (true) {
                     System.out.print("columnName > ");
                     String columnName = scanner.nextLine();
-                    if (columnName.equals("exit")) {
+                    if (columnName.equals("")) {
                         break;
                     }
                     System.out.print("value > ");
@@ -272,7 +275,7 @@ public class DataTest {
                 while (true) {
                     System.out.print("columnName > ");
                     String columnName = scanner.nextLine();
-                    if (columnName.equals("exit")) {
+                    if (columnName.equals("")) {
                         break;
                     }
                     System.out.print("value > ");
@@ -290,7 +293,7 @@ public class DataTest {
                 String columnName = scanner.nextLine();
                 System.out.print("filePath > ");
                 String filePath = scanner.nextLine();
-                if (filePath.equals("exit")) {
+                if (filePath.equals("")) {
                     filePath = null;
                 }
                 try {
@@ -303,7 +306,6 @@ public class DataTest {
             if (command.equals("delete index")) {
                 System.out.print("table > ");
                 String tableName = scanner.nextLine();
-                TableData tableData = new TableData();
                 System.out.print("columnName > ");
                 String columnName = scanner.nextLine();
                 try {
@@ -313,5 +315,18 @@ public class DataTest {
                 }
             }
         }
+    }
+
+    @Test
+    public void insertTest() throws Exception {
+        apiManager.useDatabase("bit");
+        for (long i = 0; i < 100; i++) {
+            Update update = new Update();
+            update.set("id", i+1000+"");
+            update.set("name", "yhz"+i);
+            update.set("age", i+"");
+            apiManager.insertData(update, "student");
+        }
+
     }
 }

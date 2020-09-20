@@ -36,7 +36,8 @@ public class TableDataManager {
 
     private Map<String, IndexManager> indexCache = new HashMap<>();
 
-    public void insert(TableData tableData) {
+    public void insert(TableData tableData) throws Exception {
+        transferTableData(tableData);
         byte[] dataBytes = KryoUtil.serialize(tableData);
         File file = new File(dataFilePath);
         long length = file.length();
@@ -75,7 +76,7 @@ public class TableDataManager {
         String indexName = getIndex(query);
         IndexManager indexManager = null;
         transferQuery(query);
-        IndexQuery indexQuery = QueryUtil.getLowKey(query.getCriteria().get(indexName));
+        IndexQuery indexQuery = QueryUtil.getKey(query.getCriteria().get(indexName));
         if (indexQuery.getLowKey() != null) {
             for (ColumnInfo columnInfo : table.getColumnInfo()) {
                 if (columnInfo.getColumnName().equals(indexName)) {
@@ -137,7 +138,7 @@ public class TableDataManager {
         String indexName = getIndex(query);
         IndexManager indexManager = null;
         transferQuery(query);
-        IndexQuery indexQuery = QueryUtil.getLowKey(query.getCriteria().get(indexName));
+        IndexQuery indexQuery = QueryUtil.getKey(query.getCriteria().get(indexName));
         if (indexQuery.getLowKey() != null) {
             for (ColumnInfo columnInfo : table.getColumnInfo()) {
                 String columnName = columnInfo.getColumnName();
@@ -188,7 +189,7 @@ public class TableDataManager {
         IndexManager indexManager = null;
         transferUpdate(update);
         transferQuery(query);
-        IndexQuery indexQuery = QueryUtil.getLowKey(query.getCriteria().get(indexName));
+        IndexQuery indexQuery = QueryUtil.getKey(query.getCriteria().get(indexName));
         if (indexQuery.getLowKey() != null) {
             for (ColumnInfo columnInfo : table.getColumnInfo()) {
                 if (columnInfo.getColumnName().equals(indexName)) {
@@ -358,29 +359,29 @@ public class TableDataManager {
             return true;
         }
         for (Map.Entry<String, Comparable> entry : criteria.getCriteria().entrySet()) {
-            if (entry.getKey().equals("gt")) {
+            if (entry.getKey().equals("$gt")) {
                 // 如果比他小于等于
-                if (comparable.compareTo(criteria) <= 0) {
+                if (comparable.compareTo(entry.getValue()) <= 0) {
                     return false;
                 }
             }
             if (entry.getKey().equals("$gte")) {
-                if (comparable.compareTo(criteria) < 0) {
+                if (comparable.compareTo(entry.getValue()) < 0) {
                     return false;
                 }
             }
             if (entry.getKey().equals("$lt")) {
-                if (comparable.compareTo(criteria) >= 0) {
+                if (comparable.compareTo(entry.getValue()) >= 0) {
                     return false;
                 }
             }
             if (entry.getKey().equals("$lte")) {
-                if (comparable.compareTo(criteria) > 0) {
+                if (comparable.compareTo(entry.getValue()) > 0) {
                     return false;
                 }
             }
             if (entry.getKey().equals("$ne")) {
-                if (comparable.compareTo(criteria) == 0) {
+                if (comparable.compareTo(entry.getValue()) == 0) {
                     return false;
                 }
             }
@@ -424,6 +425,29 @@ public class TableDataManager {
         }
         throw new Exception("不存在该列");
     }
+
+    public void transferTableData(TableData tableData) throws Exception {
+        for (Map.Entry<String, Comparable> entry : tableData.getData().entrySet()) {
+            DataType type = getColumnInfo(entry.getKey()).getType();
+            if (type == DataType.DOUBLE) {
+                String value = (String) entry.getValue();
+                entry.setValue(Double.parseDouble(value));
+            }
+            if (type == DataType.LONG) {
+                String value = (String) entry.getValue();
+                entry.setValue(Long.parseLong(value));
+            }
+            if (type == DataType.INT) {
+                String value = (String) entry.getValue();
+                entry.setValue(Integer.parseInt(value));
+            }
+            if (type == DataType.FLOAT) {
+                String value = (String) entry.getValue();
+                entry.setValue(Float.parseFloat(value));
+            }
+        }
+    }
+
 
     private Comparable transferObject(Object object, DataType type) {
         if (type == DataType.DOUBLE) {

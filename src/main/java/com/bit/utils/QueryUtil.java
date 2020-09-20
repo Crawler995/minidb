@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public class QueryUtil {
 
-    public static IndexQuery getLowKey(Criteria criteria) {
+    public static IndexQuery getKey(Criteria criteria) {
         IndexQuery indexQuery = new IndexQuery();
         indexQuery.setCriteria(criteria);
         if (criteria == null) {
@@ -27,29 +27,29 @@ public class QueryUtil {
             }
             return indexQuery;
         }
-        for (Map.Entry<String, Comparable> entry : criteria.getCriteria().entrySet()) {
-            if (entry.getKey().equals("$gt")) {
-                low = entry.getValue();
-                isEq = false;
-            }
-            if (entry.getKey().equals("$gte")) {
-                low = entry.getValue();
-                isEq = true;
-            }
-            if (entry.getKey().equals("$lt") && low != null) {
-                if (entry.getValue().compareTo(low) <= 0) {
-                    low = null;
-                }
-            }
-            if (entry.getKey().equals("$lte") && low != null) {
-                if (entry.getValue().compareTo(low) < 0) {
-                    low = null;
-                }
-                else if (entry.getValue().compareTo(low) == 0 && !isEq) {
-                    low = null;
-                }
-            }
-        }
+//        for (Map.Entry<String, Comparable> entry : criteria.getCriteria().entrySet()) {
+//            if (entry.getKey().equals("$gt")) {
+//                low = entry.getValue();
+//                isEq = false;
+//            }
+//            if (entry.getKey().equals("$gte")) {
+//                low = entry.getValue();
+//                isEq = true;
+//            }
+//            if (entry.getKey().equals("$lt") && low != null) {
+//                if (entry.getValue().compareTo(low) <= 0) {
+//                    low = null;
+//                }
+//            }
+//            if (entry.getKey().equals("$lte") && low != null) {
+//                if (entry.getValue().compareTo(low) < 0) {
+//                    low = null;
+//                }
+//                else if (entry.getValue().compareTo(low) == 0 && !isEq) {
+//                    low = null;
+//                }
+//            }
+//        }
         indexQuery.setLowKey(low);
         indexQuery.setEq(isEq);
         return indexQuery;
