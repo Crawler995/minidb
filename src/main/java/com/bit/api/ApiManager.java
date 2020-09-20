@@ -1,13 +1,18 @@
 package com.bit.api;
 
 import com.bit.api.manager.DatabaseManager;
+import com.bit.api.model.Criteria;
+import com.bit.api.model.Query;
+import com.bit.api.model.Update;
 import com.bit.model.Database;
 import com.bit.model.Table;
+import com.bit.model.TableData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author aerfafish
@@ -163,6 +168,44 @@ public class ApiManager {
         databaseManager.getTableManager(currentDatabase).deleteIndex(tableName, columnName);
     }
 
+    /**
+     * 插入数据
+     * @param update
+     * @param tableName
+     * update中至少set一个列，否则会抛出异常
+     * @throws Exception
+     */
+    public void insertData(@NonNull Update update, @NonNull String tableName) throws Exception {
+        if (currentDatabase == null) {
+            throw new Exception("未指定当前数据库");
+        }
+        Map<String, Object> modifyData = update.getModifyData();
+        if (modifyData == null || modifyData.size() == 0) {
+            throw new Exception("未添加列");
+        }
+        TableData tableData = new TableData();
+        tableData.setData(modifyData);
+        databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).insert(tableData);
+    }
 
+    public void deleteData(@NonNull Query query, @NonNull String tableName) throws Exception {
+        if (currentDatabase == null) {
+            throw new Exception("未指定当前数据库");
+        }
+        databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).delete(query);
+    }
+
+    public void selectData(@NonNull Query query, @NonNull String tableName) throws Exception {
+        if (currentDatabase == null) {
+            throw new Exception("未指定当前数据库");
+        }
+        databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).select(query);
+    }
+
+
+    public static void main(String[] args) throws Exception {
+        Query query = new Query().addCriteria(Criteria.where("name").is("yhz")).addCriteria(Criteria.where("id").gt("3"));
+
+    }
 
 }

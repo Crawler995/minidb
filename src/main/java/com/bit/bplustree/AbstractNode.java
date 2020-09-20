@@ -1,6 +1,8 @@
 package com.bit.bplustree;
 
-import java.util.List;
+import com.bit.api.model.IndexQuery;
+
+import java.util.Set;
 
 /**
  * @author aerfafish
@@ -23,7 +25,9 @@ public abstract class AbstractNode {
 
     /** 根据key获取对应的索引（页号）
      * @return*/
-    public abstract List<Long> get(Comparable key, BplusTree tree);
+    public abstract Set<Long> get(Comparable key, BplusTree tree);
+
+    public abstract Set<Long> get(IndexQuery query, BplusTree tree);
 
     /** 插入指定的Point */
     public abstract void insert(Point point, BplusTree tree);

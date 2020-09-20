@@ -1,11 +1,16 @@
 package com.bit.api.manager;
 
+import com.bit.api.model.Criteria;
+import com.bit.api.model.Query;
+import com.bit.api.model.Update;
+import com.bit.api.model.IndexQuery;
 import com.bit.constance.DBConfig;
 import com.bit.constance.DataType;
 import com.bit.exception.IndexExistException;
 import com.bit.model.*;
 import com.bit.utils.FileUtil;
 import com.bit.utils.KryoUtil;
+import com.bit.utils.QueryUtil;
 import com.esotericsoftware.kryo.io.Input;
 
 import java.io.*;
@@ -64,12 +69,14 @@ public class TableDataManager {
         }
     }
 
-    public void delete(TableData deleteTableData) {
-        List<Long> pageNumList = new ArrayList<>();
+    public void delete(Query query) throws Exception {
+        Set<Long> pageNumList = new HashSet<>();
         long length = new File(dataFilePath).length();
-        String indexName = getIndex(deleteTableData);
+        String indexName = getIndex(query);
         IndexManager indexManager = null;
-        if (indexName != null) {
+        transferUpdate(query);
+        IndexQuery indexQuery = QueryUtil.getLowKey(query.getCriteria().get(indexName));
+        if (indexQuery.getLowKey() != null) {
             for (ColumnInfo columnInfo : table.getColumnInfo()) {
                 if (columnInfo.getColumnName().equals(indexName)) {
                     //建立索引
@@ -79,8 +86,7 @@ public class TableDataManager {
                         indexManager = new IndexManager(indexFilePath);
                     }
                     indexCache.put(columnInfo.getColumnName(), indexManager);
-                    Object o = deleteTableData.getData().get(columnInfo.getColumnName());
-                    pageNumList = indexManager.select(transferObject(o, columnInfo.getType()));
+                    pageNumList = indexManager.select(indexQuery);
                 }
             }
         } else {
@@ -106,7 +112,7 @@ public class TableDataManager {
             Iterator<TableData> iterator = tableDataList.iterator();
             while (iterator.hasNext()) {
                 TableData tableData = iterator.next();
-                if (compare(tableData, deleteTableData)) {
+                if (compare(tableData, query)) {
                     iterator.remove();
                     if (indexName != null) {
                         deleteIndex(tableData, i);
@@ -124,24 +130,25 @@ public class TableDataManager {
 
     }
 
-    public List<TableData> select(TableData selectTableData) {
+    public List<TableData> select(Query query) throws Exception {
         List<TableData> selectTableDataList = new LinkedList<>();
-        List<Long> pageNumList = new ArrayList<>();
+        Set<Long> pageNumList = new HashSet<>();
         long length = new File(dataFilePath).length();
-        String indexName = getIndex(selectTableData);
+        String indexName = getIndex(query);
         IndexManager indexManager = null;
-        if (indexName != null) {
+        transferUpdate(query);
+        IndexQuery indexQuery = QueryUtil.getLowKey(query.getCriteria().get(indexName));
+        if (indexQuery.getLowKey() != null) {
             for (ColumnInfo columnInfo : table.getColumnInfo()) {
-                if (columnInfo.getColumnName().equals(indexName)) {
-                    //建立索引
+                String columnName = columnInfo.getColumnName();
+                if (columnName.equals(indexName)) {
                     indexManager = indexCache.get(indexName);
                     if (indexManager == null) {
                         String indexFilePath = columnInfo.getIndexFilePath();
                         indexManager = new IndexManager(indexFilePath);
                     }
-                    indexCache.put(columnInfo.getColumnName(), indexManager);
-                    Object o = selectTableData.getData().get(columnInfo.getColumnName());
-                    pageNumList = indexManager.select(transferObject(o, columnInfo.getType()));
+                    indexCache.put(columnName, indexManager);
+                    pageNumList = indexManager.select(indexQuery);
                 }
 
             }
@@ -165,7 +172,7 @@ public class TableDataManager {
             } catch (Exception ignored) {
             }
             for (TableData tableData : tableDataList) {
-                if (compare(tableData, selectTableData)) {
+                if (compare(tableData, query)) {
                     selectTableDataList.add(tableData);
                 }
             }
@@ -173,15 +180,14 @@ public class TableDataManager {
         return selectTableDataList;
     }
 
-    public void update(TableData originTableData, TableData updateTableData) {
+    public void update(Update update) throws Exception {
         List<TableData> selectTableDataList = new LinkedList<>();
-        List<Long> pageNumList = new ArrayList<>();
+        Set<Long> pageNumList = new HashSet<>();
         long length = new File(dataFilePath).length();
-        String indexName = getIndex(originTableData);
+        String indexName = getIndex(update);
         IndexManager indexManager = null;
+        transferUpdate(update);
         if (indexName != null) {
-
-
             for (ColumnInfo columnInfo : table.getColumnInfo()) {
                 if (columnInfo.getColumnName().equals(indexName)) {
                     //建立索引
@@ -190,9 +196,9 @@ public class TableDataManager {
                         String indexFilePath = columnInfo.getIndexFilePath();
                         indexManager = new IndexManager(indexFilePath);
                     }
+                    Comparable comparable = update.getModifyData().get(columnInfo.getColumnName());
                     indexCache.put(columnInfo.getColumnName(), indexManager);
-                    Object o = originTableData.getData().get(columnInfo.getColumnName());
-                    pageNumList = indexManager.select(transferObject(o, columnInfo.getType()));
+                    pageNumList = indexManager.select(comparable);
                 }
 
             }
@@ -216,8 +222,8 @@ public class TableDataManager {
             } catch (Exception ignored) {
             }
             for (TableData tableData : tableDataList) {
-                if (compare(tableData, originTableData)) {
-                    updateTableData(tableData, updateTableData);
+                if (compare(tableData, update)) {
+                    updateTableData(tableData, update);
                 }
             }
             byte[] newBytes = KryoUtil.serialize(tableDataList);
@@ -289,9 +295,29 @@ public class TableDataManager {
         throw new Exception("不存在该列");
     }
 
-    private String getIndex(TableData tableData) {
+    private String getIndex(TableData tableData) throws Exception {
         for (Map.Entry<String, Object> entry : tableData.getData().entrySet()) {
             if (entry.getKey() != null && Objects.requireNonNull(getColumnInfo(entry.getKey())).getHasIndex()) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
+    private String getIndex(Query query) throws Exception {
+        for (Map.Entry<String, Criteria> entry : query.getCriteria().entrySet()) {
+            if (getColumnInfo(entry.getKey()).getHasIndex()) {
+                // 如果存在索引
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
+    private String getIndex(Update update) throws Exception {
+        for (Map.Entry<String, Comparable> entry : update.getModifyData().entrySet()) {
+            if (getColumnInfo(entry.getKey()).getHasIndex()) {
+                // 如果存在索引
                 return entry.getKey();
             }
         }
@@ -310,6 +336,68 @@ public class TableDataManager {
         return true;
     }
 
+    private Boolean compare(TableData tableData, Query query) {
+        if (query.getCriteria().size() == 0) {
+            return true;
+        }
+        for (Map.Entry<String, Criteria> entry : query.getCriteria().entrySet()) {
+            if (!compare((Comparable) tableData.getData().get(entry.getKey()), entry.getValue())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private Boolean compare(Comparable comparable, Criteria criteria) {
+        if (criteria.getIsValue() != Criteria.NOT_SET) {
+            return comparable.compareTo(Objects.requireNonNull(criteria.getIsValue())) == 0;
+        }
+        if (criteria.getCriteria().size() == 0) {
+            return true;
+        }
+        for (Map.Entry<String, Comparable> entry : criteria.getCriteria().entrySet()) {
+            if (entry.getKey().equals("gt")) {
+                // 如果比他小于等于
+                if (comparable.compareTo(criteria) <= 0) {
+                    return false;
+                }
+            }
+            if (entry.getKey().equals("$gte")) {
+                if (comparable.compareTo(criteria) < 0) {
+                    return false;
+                }
+            }
+            if (entry.getKey().equals("$lt")) {
+                if (comparable.compareTo(criteria) >= 0) {
+                    return false;
+                }
+            }
+            if (entry.getKey().equals("$lte")) {
+                if (comparable.compareTo(criteria) > 0) {
+                    return false;
+                }
+            }
+            if (entry.getKey().equals("$ne")) {
+                if (comparable.compareTo(criteria) == 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private Boolean compare(TableData tableData, Update update) {
+        if (update.getModifyData().size() == 0) {
+            return true;
+        }
+        for (Map.Entry<String, Comparable> entry : update.getModifyData().entrySet()) {
+            if (entry.getValue().compareTo(tableData.getData().get(entry.getKey())) != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private void updateTableData(TableData target, TableData updateData) {
         for (Map.Entry<String, Object> entry : updateData.getData().entrySet()) {
             if (entry.getValue() != null) {
@@ -318,13 +406,21 @@ public class TableDataManager {
         }
     }
 
-    private ColumnInfo getColumnInfo(String columnName) {
+    private void updateTableData(TableData target, Update update) {
+        for (Map.Entry<String, Comparable> entry : update.getModifyData().entrySet()) {
+            if (entry.getValue() != null) {
+                target.getData().put(entry.getKey(), entry.getValue());
+            }
+        }
+    }
+
+    private ColumnInfo getColumnInfo(String columnName) throws Exception {
         for (ColumnInfo columnInfo : table.getColumnInfo()) {
             if (columnInfo.getColumnName().equals(columnName)) {
                 return columnInfo;
             }
         }
-        return null;
+        throw new Exception("不存在该列");
     }
 
     private Comparable transferObject(Object object, DataType type) {
@@ -345,6 +441,60 @@ public class TableDataManager {
         }
         return null;
     }
+
+    private void transferUpdate(Query query) throws Exception {
+        for (Map.Entry<String, Criteria> entry : query.getCriteria().entrySet()) {
+            DataType type = getColumnInfo(entry.getKey()).getType();
+            transferUpdate(entry.getValue(), type);
+        }
+    }
+
+    private void transferUpdate(Criteria criteria, DataType type) {
+        if (criteria.getIsValue() != Criteria.NOT_SET) {
+            criteria.setIsValue(transferObject(criteria.getIsValue(), type));
+            return;
+        }
+        for (Map.Entry<String, Comparable> entry : criteria.getCriteria().entrySet()) {
+            if (type == DataType.DOUBLE) {
+                String value = (String) entry.getValue();
+                entry.setValue(Double.parseDouble(value));
+            }
+            if (type == DataType.LONG) {
+                String value = (String) entry.getValue();
+                entry.setValue(Long.parseLong(value));
+            }
+            if (type == DataType.INT) {
+                String value = (String) entry.getValue();
+                entry.setValue(Integer.parseInt(value));
+            }
+            if (type == DataType.FLOAT) {
+                String value = (String) entry.getValue();
+                entry.setValue(Float.parseFloat(value));
+            }
+        }
+    }
+    private void transferUpdate(Update update) throws Exception {
+        for (Map.Entry<String, Comparable> entry : update.getModifyData().entrySet()) {
+            DataType type = getColumnInfo(entry.getKey()).getType();
+            if (type == DataType.DOUBLE) {
+                String value = (String) entry.getValue();
+                entry.setValue(Double.parseDouble(value));
+            }
+            if (type == DataType.LONG) {
+                String value = (String) entry.getValue();
+                entry.setValue(Long.parseLong(value));
+            }
+            if (type == DataType.INT) {
+                String value = (String) entry.getValue();
+                entry.setValue(Integer.parseInt(value));
+            }
+            if (type == DataType.FLOAT) {
+                String value = (String) entry.getValue();
+                entry.setValue(Float.parseFloat(value));
+            }
+        }
+    }
+
 
     private void deleteIndex(TableData tableData, Long pageNum) {
         for (ColumnInfo columnInfo : table.getColumnInfo()) {
@@ -368,4 +518,5 @@ public class TableDataManager {
     public void setTable(Table table) {
         this.table = table;
     }
+
 }

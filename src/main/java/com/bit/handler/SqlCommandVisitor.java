@@ -302,7 +302,7 @@ public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
     @Override
     public CommandContent visitInsertStatementValue(MySqlParser.InsertStatementValueContext ctx) {
         /* no selectStatement support*/
-
+        return null;
 
     }
 

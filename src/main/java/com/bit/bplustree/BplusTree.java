@@ -1,12 +1,13 @@
 package com.bit.bplustree;
 
+import com.bit.api.model.IndexQuery;
 import com.bit.utils.FileUtil;
 import com.bit.utils.KryoUtil;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author aerfafish
@@ -143,8 +144,12 @@ public class BplusTree {
         return -1L;
     }
 
-    public List<Long> get(Comparable key) {
+    public Set<Long> get(Comparable key) {
         return root.get(key, this);
+    }
+
+    public Set<Long> get(IndexQuery query) {
+        return root.get(query, this);
     }
 
     public void remove(Point point) {
