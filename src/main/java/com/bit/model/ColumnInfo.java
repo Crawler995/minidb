@@ -9,6 +9,14 @@ import lombok.Data;
  */
 @Data
 public class ColumnInfo {
+    public ColumnInfo() {
+    }
+
+    public ColumnInfo(String columnName, DataType type) {
+        this.columnName = columnName;
+        this.type = type;
+    }
+
     String columnName;
 
     DataType type = DataType.STRING;

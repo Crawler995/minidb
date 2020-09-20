@@ -132,6 +132,10 @@ public class TableDataManager {
     }
 
     public List<TableData> select(Query query) throws Exception {
+        return select(query, true);
+    }
+
+    public List<TableData> select(Query query, Boolean useIndex) throws Exception {
         List<TableData> selectTableDataList = new LinkedList<>();
         Set<Long> pageNumList = new HashSet<>();
         long length = new File(dataFilePath).length();
@@ -139,7 +143,7 @@ public class TableDataManager {
         IndexManager indexManager = null;
         transferQuery(query);
         IndexQuery indexQuery = QueryUtil.getKey(query.getCriteria().get(indexName));
-        if (indexQuery.getLowKey() != null) {
+        if (indexQuery.getLowKey() != null && useIndex) {
             for (ColumnInfo columnInfo : table.getColumnInfo()) {
                 String columnName = columnInfo.getColumnName();
                 if (columnName.equals(indexName)) {

@@ -203,6 +203,22 @@ public class ApiManager {
         databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).delete(query);
     }
 
+
+    /**
+     * 增加是否使用索引
+     * @param query
+     * @param tableName
+     * @param useIndex
+     * @return
+     * @throws Exception
+     */
+    public List<TableData> selectData(@NonNull Query query, @NonNull String tableName, Boolean useIndex) throws Exception {
+        if (currentDatabase == null) {
+            throw new Exception("未指定当前数据库");
+        }
+        return databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).select(query, useIndex);
+    }
+
     /**
      * 查询数据
      * @param query

@@ -321,8 +321,17 @@ public class DataTest {
 
     @Test
     public void insertTest() throws Exception {
-        long startTime = System.currentTimeMillis();
+        apiManager.createDatabase(new Database("bit", null));
         apiManager.useDatabase("bit");
+        Table table = new Table();
+        List<ColumnInfo> columnInfos = new ArrayList<>();
+        columnInfos.add(new ColumnInfo("id", DataType.LONG));
+        columnInfos.add(new ColumnInfo("name", DataType.STRING));
+        columnInfos.add(new ColumnInfo("age", DataType.INT));
+        table.setColumnInfo(columnInfos);
+        table.setTableName("student");
+        apiManager.createTable(table);
+        long startTime = System.currentTimeMillis();
         for (long i = 0; i < 200000; i++) {
             Update update = new Update();
             update.set("id", i+1000+"");
@@ -331,7 +340,27 @@ public class DataTest {
             apiManager.insertData(update, "student");
         }
         long endTime = System.currentTimeMillis();
-        System.out.println("花费时间：" + (endTime-startTime));
+        System.out.println("插入数据花费时间：" + (endTime-startTime));
+
+        startTime = System.currentTimeMillis();
+        Query query = new Query();
+        query.addCriteria(Criteria.where("id").is("23000"));
+        System.out.println(apiManager.selectData(query, "student"));
+        endTime = System.currentTimeMillis();
+        System.out.println("没有索引查询花费时间：" + (endTime-startTime));
+
+        startTime = System.currentTimeMillis();
+        apiManager.createIndex("student", "id");
+        endTime = System.currentTimeMillis();
+        System.out.println("建立索引花费时间：" + (endTime-startTime));
+
+        startTime = System.currentTimeMillis();
+        query = new Query();
+        query.addCriteria(Criteria.where("id").is("122000"));
+        System.out.println(apiManager.selectData(query, "student"));
+        endTime = System.currentTimeMillis();
+        System.out.println("存在索引查询花费时间：" + (endTime-startTime));
+
 
     }
 }
