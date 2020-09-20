@@ -44,4 +44,8 @@ public class IndexManager {
     private void initIndexManager() {
         tree = new BplusTree(filePath, 100, 100);
     }
+
+    public void clearCache() {
+        tree.clearCache();
+    }
 }

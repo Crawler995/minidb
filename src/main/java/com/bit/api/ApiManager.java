@@ -233,5 +233,11 @@ public class ApiManager {
         databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).update(query, update);
     }
 
+    public void clearIndexCache() throws Exception {
+        for (String tableName : databaseManager.getTableManager(currentDatabase).getTables()) {
+            databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).clearIndexCache();
+        }
+    }
+
 
 }

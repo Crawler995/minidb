@@ -171,4 +171,8 @@ public class BplusTree {
             FileUtil.writeFileByte(filePath, num, bytes);
         }
     }
+
+    public void clearCache() {
+        nodeCache.clear();
+    }
 }

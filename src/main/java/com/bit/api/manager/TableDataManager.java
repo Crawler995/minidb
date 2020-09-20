@@ -298,6 +298,12 @@ public class TableDataManager {
         throw new Exception("不存在该列");
     }
 
+    public void clearIndexCache() {
+        for (Map.Entry<String, IndexManager> entry : indexCache.entrySet()) {
+            entry.getValue().clearCache();
+        }
+    }
+
     private String getIndex(TableData tableData) throws Exception {
         for (Map.Entry<String, Comparable> entry : tableData.getData().entrySet()) {
             if (entry.getKey() != null && Objects.requireNonNull(getColumnInfo(entry.getKey())).getHasIndex()) {
@@ -445,6 +451,9 @@ public class TableDataManager {
         }
         if (type == DataType.FLOAT) {
             return Float.parseFloat(str);
+        }
+        if (type == DataType.STRING) {
+            return str;
         }
         throw new Exception("不存在该类型");
     }
