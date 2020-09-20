@@ -1,14 +1,12 @@
 package com.bit;
 
-import com.bit.api.manager.DatabaseManager;
-import com.bit.api.manager.TableDataManager;
-import com.bit.api.manager.TableManager;
-import com.bit.bplustree.BplusTree;
+import com.bit.api.ApiManager;
+import com.bit.api.model.Criteria;
+import com.bit.api.model.Query;
+import com.bit.api.model.Update;
 import com.bit.constance.DataType;
 import com.bit.exception.NoNameDatabaseException;
 import com.bit.exception.NoNameTableException;
-import com.bit.exception.SameNameDatabaseException;
-import com.bit.exception.SameNameTableException;
 import com.bit.model.ColumnInfo;
 import com.bit.model.Database;
 import com.bit.model.Table;
@@ -30,11 +28,10 @@ import java.util.Scanner;
 public class DataTest {
 
     @Autowired
-    DatabaseManager databaseManager;
+    ApiManager apiManager;
 
     @Test
-    public void dataTest() {
-        BplusTree tree = null;
+    public void dataTest() throws Exception {
         Scanner scanner = new Scanner(System.in);
         while (true) {
             System.out.print("db > ");
@@ -48,15 +45,21 @@ public class DataTest {
                 System.out.print("database > ");
                 String databaseName = scanner.nextLine();
                 try {
-                    databaseManager.createDatabase(new Database(databaseName, null));
-                } catch (SameNameDatabaseException e) {
+                    apiManager.createDatabase(new Database(databaseName, null));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (command.equals("use database")) {
+                System.out.print("database > ");
+                String databaseName = scanner.nextLine();
+                try {
+                    apiManager.useDatabase(databaseName);
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
             if (command.equals("create table")) {
-                System.out.print("database > ");
-                String databaseName = scanner.nextLine();
-                TableManager tableManager = databaseManager.getTableManager(databaseName);
                 System.out.print("table > ");
                 String tableName = scanner.nextLine();
                 Table table = new Table();
@@ -85,19 +88,15 @@ public class DataTest {
                 }
                 table.setColumnInfo(columnInfos);
                 try {
-                    tableManager.createTable(table);
-                } catch (SameNameTableException e) {
+                    apiManager.createTable(table);
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
             if (command.equals("insert data")) {
-                System.out.print("database > ");
-                String databaseName = scanner.nextLine();
-                TableManager tableManager = databaseManager.getTableManager(databaseName);
                 System.out.print("table > ");
                 String tableName = scanner.nextLine();
-                TableDataManager tableDataManager = tableManager.getTableDataManager(tableName);
-                TableData tableData = new TableData();
+                Update update = new Update();
                 while (true) {
                     System.out.print("columnName > ");
                     String columnName = scanner.nextLine();
@@ -106,82 +105,56 @@ public class DataTest {
                     }
                     System.out.print("value > ");
                     String value = scanner.nextLine();
-                    Table table = tableDataManager.getTable();
-                    for (ColumnInfo columnInfo : table.getColumnInfo()) {
-                        if (columnInfo.getColumnName().equals(columnName)) {
-                            if (columnInfo.getType() == DataType.LONG) {
-                                Long columnLongValue = Long.parseLong(value);
-                                tableData.getData().put(columnName, columnLongValue);
-                                break;
-                            }
-                            if (columnInfo.getType() == DataType.DOUBLE) {
-                                Double columnDoubleValue = Double.parseDouble(value);
-                                tableData.getData().put(columnName, columnDoubleValue);
-                                break;
-                            }
-                            if (columnInfo.getType() == DataType.STRING) {
-                                tableData.getData().put(columnName, value);
-                                break;
-                            }
-                        }
-                    }
+                    update.getModifyData().put(columnName, value);
                 }
-                tableDataManager.insert(tableData);
+                try {
+                    apiManager.insertData(update, tableName);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
             if (command.equals("select data")) {
-                System.out.print("database > ");
-                String databaseName = scanner.nextLine();
-                TableManager tableManager = databaseManager.getTableManager(databaseName);
-                if (tableManager == null) {
-                    System.out.println("数据库不存在");
-                }
-                System.out.print("table > ");
-                String tableName = scanner.nextLine();
-                TableDataManager tableDataManager = tableManager.getTableDataManager(tableName);
-                if (tableDataManager == null) {
-                    System.out.println("表不存在");
-                    break;
-                }
-                TableData tableData = new TableData();
-                Table table = tableDataManager.getTable();
-                if (table == null) {
-                    System.out.println("不存在该表");
-                    break;
-                }
-                while (true) {
-                    System.out.print("columnName > ");
-                    String columnName = scanner.nextLine();
-                    if (columnName.equals("exit")) {
-                        break;
-                    }
-                    System.out.print("value > ");
-                    String value = scanner.nextLine();
-                    for (ColumnInfo columnInfo : table.getColumnInfo()) {
-                        if (columnInfo.getColumnName().equals(columnName)) {
-                            if (columnInfo.getType() == DataType.LONG) {
-                                Long columnLongValue = Long.parseLong(value);
-                                tableData.getData().put(columnName, columnLongValue);
-                                break;
-                            }
-                            if (columnInfo.getType() == DataType.DOUBLE) {
-                                Double columnDoubleValue = Double.parseDouble(value);
-                                tableData.getData().put(columnName, columnDoubleValue);
-                                break;
-                            }
-                            if (columnInfo.getType() == DataType.STRING) {
-                                tableData.getData().put(columnName, value);
-                                break;
-                            }
+                try {
+                    System.out.print("table > ");
+                    String tableName = scanner.nextLine();
+                    Query query = new Query();
+                    while (true) {
+                        System.out.print("columnName > ");
+                        String columnName = scanner.nextLine();
+                        if (columnName.equals("exit")) {
+                            break;
+                        }
+                        System.out.print("value > ");
+                        String value = scanner.nextLine();
+                        System.out.print("operate > ");
+                        String operate = scanner.nextLine();
+                        if (operate.equals(">")) {
+                            query.addCriteria(Criteria.where(columnName).gte(value));
+                        }
+                        if (operate.equals(">=")) {
+                            query.addCriteria(Criteria.where(columnName).lte(value));
+                        }
+                        if (operate.equals("=")) {
+                            query.addCriteria(Criteria.where(columnName).is(value));
+                        }
+                        if (operate.equals("<")) {
+                            query.addCriteria(Criteria.where(columnName).lt(value));
+                        }
+                        if (operate.equals("<=")) {
+                            query.addCriteria(Criteria.where(columnName).lte(value));
+                        }
+                        if (operate.equals("!=")) {
+                            query.addCriteria(Criteria.where(columnName).ne(value));
                         }
                     }
+                    System.out.println(apiManager.selectData(query, tableName));
+                } catch (Exception ignored) {
+
                 }
-                System.out.println(tableDataManager.select(tableData));
+
             }
             if (command.equals("select tables")) {
-                System.out.print("database > ");
-                String databaseName = scanner.nextLine();
-                TableManager tableManager = databaseManager.getTableManager(databaseName);
-                System.out.println(tableManager.getTables());
+                System.out.println(apiManager.showTables());
             }
 
             if (command.equals("update database")) {
@@ -199,7 +172,7 @@ public class DataTest {
                     newDatabase.setFilePath(filePath);
                 }
                 try {
-                    databaseManager.updateDatabase(originDatabase, newDatabase);
+                    apiManager.updateDatabase(originDatabase, newDatabase);
                 } catch (NoNameDatabaseException e) {
                     e.printStackTrace();
                 }
@@ -209,38 +182,26 @@ public class DataTest {
                 System.out.print("database > ");
                 String databaseName = scanner.nextLine();
                 try {
-                    databaseManager.deleteDatabase(databaseName);
+                    apiManager.deleteDatabase(databaseName);
                 } catch (NoNameDatabaseException e) {
                     e.printStackTrace();
                 }
             }
 
             if (command.equals("delete table")) {
-                System.out.print("database > ");
-                String databaseName = scanner.nextLine();
-                TableManager tableManager = databaseManager.getTableManager(databaseName);
                 System.out.print("table > ");
                 String tableName = scanner.nextLine();
                 try {
-                    tableManager.deleteTable(tableName);
+                    apiManager.deleteTable(tableName);
                 } catch (NoNameTableException e) {
                     e.printStackTrace();
                 }
             }
 
             if (command.equals("delete data")) {
-                System.out.print("database > ");
-                String databaseName = scanner.nextLine();
-                TableManager tableManager = databaseManager.getTableManager(databaseName);
                 System.out.print("table > ");
                 String tableName = scanner.nextLine();
-                TableDataManager tableDataManager = tableManager.getTableDataManager(tableName);
-                Table table = tableDataManager.getTable();
-                if (table == null) {
-                    System.out.println("不存在该表");
-                    break;
-                }
-                TableData tableData = new TableData();
+                Query query = new Query();
                 while (true) {
                     System.out.print("columnName > ");
                     String columnName = scanner.nextLine();
@@ -249,41 +210,36 @@ public class DataTest {
                     }
                     System.out.print("value > ");
                     String value = scanner.nextLine();
-                    for (ColumnInfo columnInfo : table.getColumnInfo()) {
-                        if (columnInfo.getColumnName().equals(columnName)) {
-                            if (columnInfo.getType() == DataType.LONG) {
-                                Long columnLongValue = Long.parseLong(value);
-                                tableData.getData().put(columnName, columnLongValue);
-                                break;
-                            }
-                            if (columnInfo.getType() == DataType.DOUBLE) {
-                                Double columnDoubleValue = Double.parseDouble(value);
-                                tableData.getData().put(columnName, columnDoubleValue);
-                                break;
-                            }
-                            if (columnInfo.getType() == DataType.STRING) {
-                                tableData.getData().put(columnName, value);
-                                break;
-                            }
-                        }
+                    System.out.print("operate > ");
+                    String operate = scanner.nextLine();
+                    if (operate.equals(">")) {
+                        query.addCriteria(Criteria.where(columnName).gte(value));
+                    }
+                    if (operate.equals(">=")) {
+                        query.addCriteria(Criteria.where(columnName).lte(value));
+                    }
+                    if (operate.equals("=")) {
+                        query.addCriteria(Criteria.where(columnName).is(value));
+                    }
+                    if (operate.equals("<")) {
+                        query.addCriteria(Criteria.where(columnName).lt(value));
+                    }
+                    if (operate.equals("<=")) {
+                        query.addCriteria(Criteria.where(columnName).lte(value));
+                    }
+                    if (operate.equals("!=")) {
+                        query.addCriteria(Criteria.where(columnName).ne(value));
                     }
                 }
-                tableDataManager.delete(tableData);
+                apiManager.deleteData(query, tableName);
             }
 
             if (command.equals("update data")) {
-                System.out.print("database > ");
-                String databaseName = scanner.nextLine();
-                TableManager tableManager = databaseManager.getTableManager(databaseName);
                 System.out.print("table > ");
                 String tableName = scanner.nextLine();
-                TableDataManager tableDataManager = tableManager.getTableDataManager(tableName);
-                Table table = tableDataManager.getTable();
-                if (table == null) {
-                    System.out.println("不存在该表");
-                    break;
-                }
-                TableData originData = new TableData();
+
+                Update update = new Update();
+                Query query = new Query();
                 while (true) {
                     System.out.print("columnName > ");
                     String columnName = scanner.nextLine();
@@ -292,26 +248,27 @@ public class DataTest {
                     }
                     System.out.print("value > ");
                     String value = scanner.nextLine();
-                    for (ColumnInfo columnInfo : table.getColumnInfo()) {
-                        if (columnInfo.getColumnName().equals(columnName)) {
-                            if (columnInfo.getType() == DataType.LONG) {
-                                Long columnLongValue = Long.parseLong(value);
-                                originData.getData().put(columnName, columnLongValue);
-                                break;
-                            }
-                            if (columnInfo.getType() == DataType.DOUBLE) {
-                                Double columnDoubleValue = Double.parseDouble(value);
-                                originData.getData().put(columnName, columnDoubleValue);
-                                break;
-                            }
-                            if (columnInfo.getType() == DataType.STRING) {
-                                originData.getData().put(columnName, value);
-                                break;
-                            }
-                        }
+                    System.out.print("operate > ");
+                    String operate = scanner.nextLine();
+                    if (operate.equals(">")) {
+                        query.addCriteria(Criteria.where(columnName).gte(value));
+                    }
+                    if (operate.equals(">=")) {
+                        query.addCriteria(Criteria.where(columnName).lte(value));
+                    }
+                    if (operate.equals("=")) {
+                        query.addCriteria(Criteria.where(columnName).is(value));
+                    }
+                    if (operate.equals("<")) {
+                        query.addCriteria(Criteria.where(columnName).lt(value));
+                    }
+                    if (operate.equals("<=")) {
+                        query.addCriteria(Criteria.where(columnName).lte(value));
+                    }
+                    if (operate.equals("!=")) {
+                        query.addCriteria(Criteria.where(columnName).ne(value));
                     }
                 }
-                TableData newData = new TableData();
                 while (true) {
                     System.out.print("columnName > ");
                     String columnName = scanner.nextLine();
@@ -320,32 +277,12 @@ public class DataTest {
                     }
                     System.out.print("value > ");
                     String value = scanner.nextLine();
-                    for (ColumnInfo columnInfo : table.getColumnInfo()) {
-                        if (columnInfo.getColumnName().equals(columnName)) {
-                            if (columnInfo.getType() == DataType.LONG) {
-                                Long columnLongValue = Long.parseLong(value);
-                                newData.getData().put(columnName, columnLongValue);
-                                break;
-                            }
-                            if (columnInfo.getType() == DataType.DOUBLE) {
-                                Double columnDoubleValue = Double.parseDouble(value);
-                                newData.getData().put(columnName, columnDoubleValue);
-                                break;
-                            }
-                            if (columnInfo.getType() == DataType.STRING) {
-                                newData.getData().put(columnName, value);
-                                break;
-                            }
-                        }
-                    }
+                    update.getModifyData().put(columnName, value);
                 }
-                tableDataManager.update(originData, newData);
+                apiManager.updateData(query, update, tableName);
             }
 
             if (command.equals("create index")) {
-                System.out.print("database > ");
-                String databaseName = scanner.nextLine();
-                TableManager tableManager = databaseManager.getTableManager(databaseName);
                 System.out.print("table > ");
                 String tableName = scanner.nextLine();
                 TableData tableData = new TableData();
@@ -357,23 +294,20 @@ public class DataTest {
                     filePath = null;
                 }
                 try {
-                    tableManager.createIndex(tableName, columnName, filePath);
+                    apiManager.createIndex(tableName, columnName);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
 
             if (command.equals("delete index")) {
-                System.out.print("database > ");
-                String databaseName = scanner.nextLine();
-                TableManager tableManager = databaseManager.getTableManager(databaseName);
                 System.out.print("table > ");
                 String tableName = scanner.nextLine();
                 TableData tableData = new TableData();
                 System.out.print("columnName > ");
                 String columnName = scanner.nextLine();
                 try {
-                    tableManager.deleteIndex(tableName, columnName);
+                    apiManager.deleteIndex(tableName, columnName);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

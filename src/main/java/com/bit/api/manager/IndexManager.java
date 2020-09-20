@@ -2,8 +2,9 @@ package com.bit.api.manager;
 
 import com.bit.bplustree.BplusTree;
 import com.bit.bplustree.Point;
+import com.bit.api.model.IndexQuery;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * @author aerfafish
@@ -24,8 +25,12 @@ public class IndexManager {
         tree.insert(new Point(key, pageNum));
     }
 
-    public List<Long> select(Comparable key) {
+    public Set<Long> select(Comparable key) {
         return tree.get(key);
+    }
+
+    public Set<Long> select(IndexQuery query) {
+        return tree.get(query);
     }
 
     public void delete(Comparable key, Long pageNum) {

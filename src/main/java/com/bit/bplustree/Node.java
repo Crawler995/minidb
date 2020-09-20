@@ -5,11 +5,13 @@ package com.bit.bplustree;
  * @date 2020/9/10 4:30 下午
  */
 
+import com.bit.api.model.IndexQuery;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 存在问题 如何通过页号找到页
@@ -31,7 +33,7 @@ public class Node extends AbstractNode {
 
 
     @Override
-    public List<Long> get(Comparable key, BplusTree tree) {
+    public Set<Long> get(Comparable key, BplusTree tree) {
         for (int i = 0; i < children.size(); i++) {
             if (children.get(i).getKey().compareTo(key) >= 0) {
                 AbstractNode node = tree.getNode(children.get(i - 1).getValue());
@@ -42,7 +44,22 @@ public class Node extends AbstractNode {
                 return node.get(key, tree);
             }
         }
-        return Collections.singletonList(-1L);
+        return Collections.singleton(-1L);
+    }
+
+    @Override
+    public Set<Long> get(IndexQuery query, BplusTree tree) {
+        for (int i = 0; i < children.size(); i++) {
+            if (children.get(i).getKey().compareTo(query.getLowKey()) >= 0) {
+                AbstractNode node = tree.getNode(children.get(i - 1).getValue());
+                return node.get(query.getLowKey(), tree);
+            }
+            if (i == children.size() - 1) {
+                AbstractNode node = tree.getNode(children.get(i).getValue());
+                return node.get(query.getLowKey(), tree);
+            }
+        }
+        return Collections.singleton(-1L);
     }
 
     // 从上往下

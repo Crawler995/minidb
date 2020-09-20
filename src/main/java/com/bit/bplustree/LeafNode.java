@@ -1,10 +1,10 @@
 package com.bit.bplustree;
 
+import com.bit.api.model.Criteria;
+import com.bit.api.model.IndexQuery;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author aerfafish
@@ -61,8 +61,8 @@ public class LeafNode extends AbstractNode {
     }
 
     @Override
-    public List<Long> get(Comparable key, BplusTree tree) {
-        List<Long> resultList = new ArrayList<>();
+    public Set<Long> get(Comparable key, BplusTree tree) {
+        Set<Long> resultList = new HashSet<>();
         LeafNode node = this;
         boolean flag = false;
         while (node != null) {
@@ -83,7 +83,32 @@ public class LeafNode extends AbstractNode {
             return resultList;
         }
         // 如果一个都没找到返回空值
-        return Collections.singletonList(-1L);
+        return Collections.singleton(-1L);
+    }
+
+    public Set<Long> get(IndexQuery query, BplusTree tree) {
+        Set<Long> resultList = new HashSet<>();
+        LeafNode node = this;
+        boolean flag = false;
+        while (node != null) {
+            for (Point point : node.points) {
+                if (compare(point.getKey(), query) > 0) {
+                    return resultList;
+                }
+                // 如果找到该值
+                if (compare(point.getKey(), query) == 0) {
+                    resultList.add(point.getValue());
+                    flag = true;
+                }
+            }
+            if (next == -1) {
+                return resultList;
+            }
+            resultList.addAll(tree.getNode(next).get(query, tree));
+            return resultList;
+        }
+        // 如果一个都没找到返回空值
+        return Collections.singleton(-1L);
     }
 
     @Override
@@ -216,6 +241,49 @@ public class LeafNode extends AbstractNode {
             tree.getNode(next).updatePoint(key, value, newValue, tree);
             return;
         }
+    }
+
+    private int compare(Comparable comparable, IndexQuery query) {
+        Criteria criteria = query.getCriteria();
+        if (criteria.getCriteria().size() == 0) {
+            return 0;
+        }
+        if (comparable.compareTo(query.getLowKey()) < 0) {
+            return -1;
+        }
+        if (comparable.compareTo(query.getLowKey()) == 0 && !query.isEq()) {
+            return -1;
+        }
+
+        for (Map.Entry<String, Comparable> entry : criteria.getCriteria().entrySet()) {
+            if (entry.getKey().equals("gt")) {
+                // 如果比他小于等于
+                if (comparable.compareTo(criteria) <= 0) {
+                    return -1;
+                }
+            }
+            if (entry.getKey().equals("$gte")) {
+                if (comparable.compareTo(criteria) < 0) {
+                    return -1;
+                }
+            }
+            if (entry.getKey().equals("$lt")) {
+                if (comparable.compareTo(criteria) >= 0) {
+                    return 1;
+                }
+            }
+            if (entry.getKey().equals("$lte")) {
+                if (comparable.compareTo(criteria) > 0) {
+                    return 1;
+                }
+            }
+            if (entry.getKey().equals("$ne")) {
+                if (comparable.compareTo(criteria) == 0) {
+                    return 1;
+                }
+            }
+        }
+        return 0;
     }
 
 }
