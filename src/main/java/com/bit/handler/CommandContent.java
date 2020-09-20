@@ -15,19 +15,29 @@ public class CommandContent {
         dropDatabase,dropTable,dropIndex,
         showDatabases,showTables,
         use,
-        insert,select,
+        insert,delete,update,select,
         errorCommand
     }
 
     Operation operation = null;
+
     List<ColumnName> columnNames = new ArrayList<>();
     List<TableName> tableNames = new ArrayList<>();
+
     String databaseName = null; // create/drop/use database
-    IndexName indexName = null;
+    List<TableCreateInfo> tableCreateInfo = new ArrayList<>(); // create table
+    IndexName indexName = null;// create index
+
+    List<SubCommandOfWhere> subCommandOfWheres = new ArrayList<>();
+
+    List<String> insertedColumn = new ArrayList<>();
+    List<List<String>> insertedColumnValue = new ArrayList<>();
+
     Map<String,Boolean> config = new HashMap<>();
     String rawCommand = null;
+
     List<String> tempString = new ArrayList<>();
-    List<TableCreateInfo> tableCreateInfo = new ArrayList<>();
+
 
     public void setOperation(Operation operation) {
         this.operation = operation;
@@ -116,5 +126,38 @@ public class CommandContent {
     }
     public List<TableCreateInfo> getTableCreateInfo() {
         return tableCreateInfo;
+    }
+
+    public void setInsertedColumn(List<String> insertedColumn) {
+        this.insertedColumn = insertedColumn;
+    }
+    public List<String> getInsertedColumn() {
+        return insertedColumn;
+    }
+
+    public void setInsertedColumnValue(List<List<String>> insertedColumnValue) {
+        this.insertedColumnValue = insertedColumnValue;
+    }
+    public List<List<String>> getInsertedColumnValue() {
+        return insertedColumnValue;
+    }
+
+    public void addSubCommandOfWheres(ColumnName columnName,String operation,String value){
+        subCommandOfWheres.add(new SubCommandOfWhere(columnName,operation,value));
+    }
+    public void addSubCommandOfWheres(ColumnName columnName,String operation,ColumnName value){
+        subCommandOfWheres.add(new SubCommandOfWhere(columnName,operation,value));
+    }
+    public void addSubCommandOfWheres(ColumnName columnName,String operation,String value_first,String value_second){
+        subCommandOfWheres.add(new SubCommandOfWhere(columnName,operation,value_first,value_second));
+    }
+    public void addSubCommandOfWheres(SubCommandOfWhere subCommandOfWhere){
+        subCommandOfWheres.add(subCommandOfWhere);
+    }
+    public void addSubCommandOfWheres(List<SubCommandOfWhere> subCommandOfWheres){
+        this.subCommandOfWheres.addAll(subCommandOfWheres);
+    }
+    public List<SubCommandOfWhere> getSubCommandOfWheres() {
+        return subCommandOfWheres;
     }
 }

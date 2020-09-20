@@ -263,7 +263,7 @@ public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
     /** insert*/
     @Override
     public CommandContent visitInsertStatement(MySqlParser.InsertStatementContext ctx) {
-        CommandContent content = new CommandContent();
+        CommandContent content;
         List<String> columnNames = new ArrayList<>();
         String tableName;
         String databaseName;
@@ -279,10 +279,11 @@ public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
                 break;
             default:
                 tableName = databaseName = null;
-                /**
-                 * error!
-                 */
-                break;
+                content = new CommandContent();
+                content.setRawCommand(rawCommand);
+                content.setOperation(CommandContent.Operation.errorCommand);
+                commandContents.add(content);
+                return null;
         }
         if(ctx.columns != null){
             for(MySqlParser.UidContext c : ctx.uidList(1).uid()){
@@ -290,26 +291,91 @@ public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
                 columnNames.add(name);
             }
         }
-
-
-
-        content.setOperation(CommandContent.Operation.insert);
+        content = visit(ctx.insertStatementValue());
+        if(content == null){
+            content = new CommandContent();
+            content.setOperation(CommandContent.Operation.errorCommand);
+        }
+        else{
+            content.setOperation(CommandContent.Operation.insert);
+            content.setInsertedColumn(columnNames);
+            content.addTableName(tableName,null,databaseName);
+        }
         content.setRawCommand(rawCommand);
         commandContents.add(content);
         return null;
     }
 
+    /** delete (single table)
+     * no multiple tables delete support */
     @Override
-    public CommandContent visitInsertStatementValue(MySqlParser.InsertStatementValueContext ctx) {
-        /* no selectStatement support*/
+    public CommandContent visitSingleDeleteStatement(MySqlParser.SingleDeleteStatementContext ctx) {
+        CommandContent content = new CommandContent();
+        String tableName;
+        String databaseName;
+        List<String> tempString = visit(ctx.tableName()).getTempString();
+        switch(tempString.size()){
+            case 1:
+                tableName = tempString.get(0);
+                databaseName = null;
+                break;
+            case 2:
+                tableName = tempString.get(1);
+                databaseName = tempString.get(0);
+                break;
+            default:
+                tableName = databaseName = null;
+                content.setRawCommand(rawCommand);
+                content.setOperation(CommandContent.Operation.errorCommand);
+                commandContents.add(content);
+                return null;
+        }
 
+        content.addTableName(tableName,null,databaseName);
+        if(ctx.expression() != null){
+            content.addSubCommandOfWheres(visit(ctx.expression()).getSubCommandOfWheres());
+        }
+
+        content.setOperation(CommandContent.Operation.delete);
+        content.setRawCommand(rawCommand);
+        commandContents.add(content);
+        return null;
 
     }
 
-    /**
-     * data manipulation language statement details
-     * here to create CommandContent object
-     */
+
+    /** update*/
+    @Override
+    public CommandContent visitSingleUpdateStatement(MySqlParser.SingleUpdateStatementContext ctx) {
+        return
+    }
+
+    @Override
+    public CommandContent visitUpdatedElement(MySqlParser.UpdatedElementContext ctx) {
+        CommandContent content = new CommandContent();
+        content.addColumnName(visit(ctx.fullColumnName()).getColumnNames());
+        String value =
+    }
+
+    @Override
+    public CommandContent visitInsertStatementValue(MySqlParser.InsertStatementValueContext ctx) {
+        /* no selectStatement support*/
+        List<List<String>> columnValues = new ArrayList<>();
+        CommandContent content = new CommandContent();
+        if(ctx.selectStatement() != null){
+            return null;
+        }
+
+        for(MySqlParser.ExpressionsWithDefaultsContext ct : ctx.expressionsWithDefaults()){
+            List<String> columnValue = new ArrayList<>();
+            for(MySqlParser.ExpressionOrDefaultContext c : ct.expressionOrDefault()){
+                columnValue.add(c.getText());
+            }
+            columnValues.add(columnValue);
+        }
+        content.setInsertedColumnValue(columnValues);
+        return content;
+    }
 
 
 
@@ -328,11 +394,6 @@ public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
         return content;
     }
 
-    /**
-     * detail's detail
-     * @param ctx
-     * @return CommandContent
-     */
     @Override
     public CommandContent visitSelectElements(MySqlParser.SelectElementsContext ctx) {
         CommandContent content = new CommandContent();
@@ -424,12 +485,89 @@ public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
     public CommandContent visitFromClause(MySqlParser.FromClauseContext ctx) {
         CommandContent content = new CommandContent();
         content.addTableName(visit(ctx.tableSources()).getTableNames());
+        content.addSubCommandOfWheres(visit(ctx.havingExpr).getSubCommandOfWheres());
+
         return content;
     }
 
-    /**
-     * common component
-     */
+    @Override
+    public CommandContent visitLogicalExpression(MySqlParser.LogicalExpressionContext ctx) {
+        CommandContent content = new CommandContent();
+        content.addSubCommandOfWheres(visit(ctx.expression(0)).getSubCommandOfWheres());
+        content.addSubCommandOfWheres(visit(ctx.expression(1)).getSubCommandOfWheres());
+
+        return content;
+    }
+
+    @Override
+    public CommandContent visitPredicateExpression(MySqlParser.PredicateExpressionContext ctx) {
+        return  visit(ctx.predicate());
+    }
+
+    @Override
+    public CommandContent visitExpressionAtomPredicate(MySqlParser.ExpressionAtomPredicateContext ctx) {
+        CommandContent content = visit(ctx.expressionAtom());
+        if(content != null){
+            if(content.getColumnNames().size() > 0){
+                
+            }
+        }
+    }
+
+    @Override
+    public CommandContent visitConstantExpressionAtom(MySqlParser.ConstantExpressionAtomContext ctx) {
+        CommandContent content = new CommandContent();
+
+    }
+
+    @Override
+    public CommandContent visitFullColumnNameExpressionAtom(MySqlParser.FullColumnNameExpressionAtomContext ctx) {
+        CommandContent content = new CommandContent();
+        content.addColumnName(visit(ctx.fullColumnName()).getColumnNames());
+
+        return content;
+    }
+
+    @Override
+    public CommandContent visitBinaryComparasionPredicate(MySqlParser.BinaryComparasionPredicateContext ctx) {
+        CommandContent content = new CommandContent();
+        String columnName = ctx.left.getText();
+        String operation = ctx.comparisonOperator().getText();
+        String value = ctx.right.getText();
+        content.addSubCommandOfWheres(columnName,operation,value);
+
+        return content;
+    }
+
+    @Override
+    public CommandContent visitLikePredicate(MySqlParser.LikePredicateContext ctx) {
+        CommandContent content = new CommandContent();
+        String columnName = ctx.predicate(0).getText();
+        String operation;
+        if(ctx.NOT() != null){
+            operation = "NOT LIKE";
+        }
+        else{
+            operation = "LIKE";
+        }
+        String value = ctx.predicate(1).getText();
+        content.addSubCommandOfWheres(columnName,operation,value);
+
+        return content;
+    }
+
+    @Override
+    public CommandContent visitBetweenPredicate(MySqlParser.BetweenPredicateContext ctx) {
+        CommandContent content = new CommandContent();
+        String columnName = ctx.predicate(0).getText();
+        String operation = "BETWEEN";
+        String value = ctx.predicate(1).getText();
+        String value_1 = ctx.predicate(2).getText();
+        content.addSubCommandOfWheres(columnName,operation,value,value_1);
+
+        return content;
+    }
+
     @Override
     public CommandContent visitFullId(MySqlParser.FullIdContext ctx) {
         CommandContent content = new CommandContent();
