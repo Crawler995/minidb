@@ -429,23 +429,24 @@ public class TableDataManager {
     public void transferTableData(TableData tableData) throws Exception {
         for (Map.Entry<String, Comparable> entry : tableData.getData().entrySet()) {
             DataType type = getColumnInfo(entry.getKey()).getType();
-            if (type == DataType.DOUBLE) {
-                String value = (String) entry.getValue();
-                entry.setValue(Double.parseDouble(value));
-            }
-            if (type == DataType.LONG) {
-                String value = (String) entry.getValue();
-                entry.setValue(Long.parseLong(value));
-            }
-            if (type == DataType.INT) {
-                String value = (String) entry.getValue();
-                entry.setValue(Integer.parseInt(value));
-            }
-            if (type == DataType.FLOAT) {
-                String value = (String) entry.getValue();
-                entry.setValue(Float.parseFloat(value));
-            }
+            entry.setValue(transferString(entry.getKey(), type));
         }
+    }
+
+    private Comparable transferString(String str, DataType type) throws Exception {
+        if (type == DataType.DOUBLE) {
+            return Double.parseDouble(str);
+        }
+        if (type == DataType.LONG) {
+            return Long.parseLong(str);
+        }
+        if (type == DataType.INT) {
+            return Integer.parseInt(str);
+        }
+        if (type == DataType.FLOAT) {
+            return Float.parseFloat(str);
+        }
+        throw new Exception("不存在该类型");
     }
 
 
@@ -475,9 +476,9 @@ public class TableDataManager {
         }
     }
 
-    private void transferQuery(Criteria criteria, DataType type) {
+    private void transferQuery(Criteria criteria, DataType type) throws Exception {
         if (criteria.getIsValue() != Criteria.NOT_SET) {
-            criteria.setIsValue(transferObject(criteria.getIsValue(), type));
+            criteria.setIsValue(transferString((String) criteria.getIsValue(), type));
             return;
         }
         for (Map.Entry<String, Comparable> entry : criteria.getCriteria().entrySet()) {

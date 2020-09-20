@@ -2,6 +2,7 @@ package com.bit.handler;
 
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -10,9 +11,9 @@ import java.util.List;
  */
 @Data
 public class HandlerResult {
-    String curDatabase;
+    String curDatabase = "";
 
-    List<String> columns;
+    List<String> columns = new ArrayList<>();
 
-    List<Object> data;
+    List<Object> data =  new ArrayList<>();
 }

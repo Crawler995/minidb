@@ -4,6 +4,7 @@ import com.bit.api.model.Criteria;
 import com.bit.api.model.IndexQuery;
 
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * @author aerfafish
@@ -21,7 +22,7 @@ public class QueryUtil {
         boolean isEq = false;
         if (criteria.getIsValue() != Criteria.NOT_SET) {
             indexQuery.setEq(true);
-            if (criteria.getIsValue() instanceof String) {
+            if (!(criteria.getIsValue() instanceof Pattern)) {
                 low = (Comparable) criteria.getIsValue();
                 indexQuery.setLowKey(low);
             }

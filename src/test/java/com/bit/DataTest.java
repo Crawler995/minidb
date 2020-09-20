@@ -150,7 +150,9 @@ public class DataTest {
                             query.addCriteria(Criteria.where(columnName).ne(value));
                         }
                     }
+                    long startTime = System.currentTimeMillis();
                     System.out.println(apiManager.selectData(query, tableName));
+                    System.out.println("花费时间：" + (System.currentTimeMillis() - startTime));
                 } catch (Exception ignored) {
 
                 }
@@ -320,11 +322,11 @@ public class DataTest {
     @Test
     public void insertTest() throws Exception {
         apiManager.useDatabase("bit");
-        for (long i = 0; i < 100; i++) {
+        for (long i = 0; i < 200000; i++) {
             Update update = new Update();
             update.set("id", i+1000+"");
             update.set("name", "yhz"+i);
-            update.set("age", i+"");
+            update.set("age", i%20+"");
             apiManager.insertData(update, "student");
         }
 

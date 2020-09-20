@@ -141,8 +141,6 @@
                     <!-- exec only -->
                     <mainClass>com.bit.DBApplication</mainClass>
                     <classifier>exec</classifier>
-                    <layout>ZIP</layout>
-                    <excludeGroupIds>io.humble</excludeGroupIds>
                 </configuration>
                 <executions>
                     <execution>
