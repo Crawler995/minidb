@@ -77,12 +77,15 @@ public class CommandHandler {
                     List<TableCreateInfo> tableCreateInfos = content.getTableCreateInfo();
                     for (TableCreateInfo tableCreateInfo : tableCreateInfos) {
                         ColumnInfo columnInfo = new ColumnInfo();
-                        columnInfo.setColumnName(tableCreateInfo.getColumnName());
+                        columnInfo.setColumnName(tableCreateInfo.getColumnName().trim());
                         String type = tableCreateInfo.getType();
-
+                        columnInfos.add(columnInfo);
                         switch (type) {
                             case "INT":
                                 columnInfo.setType(DataType.INT);
+                                break;
+                            case "DOUBLE":
+                                columnInfo.setType(DataType.DOUBLE);
                                 break;
                             case "LONG":
                                 columnInfo.setType(DataType.LONG);
@@ -134,6 +137,7 @@ public class CommandHandler {
                     break;
                 case use:
                     apiManager.useDatabase(content.getDatabaseName());
+                    break;
                 case insert:
                     if (content.insertedColumn.size() == 0) {
                         /**
@@ -224,6 +228,7 @@ public class CommandHandler {
                     }
 
                     apiManager.updateData(query, update, content.getTableNames().get(0).getTableName());
+                    break;
                 case select:
                     query = new Query();
                     if (content.getSubCommandOfWheres().size() != 0) {
@@ -291,4 +296,6 @@ public class CommandHandler {
 
         return null;
     }
+
+
 }

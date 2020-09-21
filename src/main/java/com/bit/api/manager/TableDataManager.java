@@ -457,7 +457,11 @@ public class TableDataManager {
             return Float.parseFloat(str);
         }
         if (type == DataType.STRING) {
-            return str;
+            if (str.indexOf("\"") == 0 && str.lastIndexOf("\"") == str.length()-1) {
+                return str.substring(1, str.length()-1);
+            } else {
+                return str;
+            }
         }
         throw new Exception("不存在该类型");
     }
@@ -510,6 +514,15 @@ public class TableDataManager {
             if (type == DataType.FLOAT) {
                 String value = (String) entry.getValue();
                 entry.setValue(Float.parseFloat(value));
+            }
+            if (type == DataType.STRING) {
+                String value = (String) entry.getValue();
+                if (value.indexOf("\"") == 0 && value.lastIndexOf("\"") == 0) {
+                    entry.setValue(value.substring(1, value.length()-1));
+                } else {
+                    entry.setValue(value);
+                }
+
             }
         }
     }
