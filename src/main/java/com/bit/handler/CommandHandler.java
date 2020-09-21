@@ -264,26 +264,14 @@ public class CommandHandler {
                         columnNames.add(name.getColumnName());
                     }
                     List<TableData> tableDatas = apiManager.selectData(query, content.getTableNames().get(0).getTableName());
-                    if(tableDatas.size() > 0) {
-                        Set<String> keySet = tableDatas.get(0).getData().keySet();
-                        if (keySet.size() > 0) {
-                            if(columnNames.contains("*")) {
-                                columns = new ArrayList<>(keySet);
-                            }
-                            else{
-                                 columns = columnNames;
-                            }
-                            handlerResult.setColumns(columns);
-                            for(TableData tableData:tableDatas){
-                                List<Object> columnData = new ArrayList<>();
-                                for(String s : columns){
-                                    columnData.add(tableData.getData().get(s));
-                                }
-                                data.add(columnData);
-                            }
-                        }
-                        handlerResult.setData(data);
+                    for (TableData tableData : tableDatas) {
+                        data.add(tableData.getData());
                     }
+                    Set<String> nameSet = tableDatas.get(0).getData().keySet();
+                    List<String> columnNameList = new ArrayList<>();
+                    columnNameList.addAll(nameSet);
+                    handlerResult.setData(data);
+                    handlerResult.setColumns(columnNameList);
                     break;
             }
             //handlerResult here

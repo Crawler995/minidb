@@ -7,12 +7,12 @@ import com.bit.response.CurrentDatabaseResponse;
 import com.bit.response.RunSqlResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * @author aerfafish
@@ -30,8 +30,10 @@ public class CommandController {
     CommandHandler commandHandler;
 
     @RequestMapping("/runsql")
-    public RunSqlResponse execCommand(@NonNull String command) {
+    public RunSqlResponse execCommand(@RequestBody Map params) {
+        String command = (String) params.get("command");
         RunSqlResponse runSqlResponse = new RunSqlResponse();
+//        java.net.URLDecoder.decode(command, StandardCharsets.UTF_8.name());
         long startTime = System.currentTimeMillis();
         SimpleDateFormat sdf = new SimpleDateFormat();// 格式化时间
         sdf.applyPattern("yyyy-MM-dd HH:mm:ss a");// a为am/pm的标记
