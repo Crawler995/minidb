@@ -8,8 +8,10 @@ import com.bit.model.Table;
 import com.bit.model.TableData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +27,17 @@ public class ApiManager {
     DatabaseManager databaseManager;
 
     String currentDatabase = null;
+
+
+    @Scheduled(fixedRate = 1000*60*60)
+    public void scheduledTask() {
+        System.out.println("清理缓存时间：" + LocalDateTime.now());
+        try {
+            clearIndexCache();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 
     /**
@@ -250,10 +263,17 @@ public class ApiManager {
     }
 
     public void clearIndexCache() throws Exception {
-        for (String tableName : databaseManager.getTableManager(currentDatabase).getTables()) {
-            databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).clearIndexCache();
+        List<String> databases = showDatabases();
+        for (String database : databases) {
+            for (String tableName : databaseManager.getTableManager(database).getTables()) {
+                databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).clearIndexCache();
+            }
         }
+
     }
 
+    public List<String> getTableColumns(String tableName) {
+        return databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).getTableColumns();
+    }
 
 }

@@ -36,6 +36,13 @@ public class TableDataManager {
 
     private Map<String, IndexManager> indexCache = new HashMap<>();
 
+    public List<String> getTableColumns() {
+        List<String> columnName = new ArrayList<>();
+        for (ColumnInfo columnInfo : table.getColumnInfo()) {
+            columnName.add(columnInfo.getColumnName());
+        }
+        return columnName;
+    }
     public void insert(TableData tableData) throws Exception {
         transferTableData(tableData);
         byte[] dataBytes = KryoUtil.serialize(tableData);

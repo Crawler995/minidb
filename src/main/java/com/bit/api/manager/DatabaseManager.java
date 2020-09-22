@@ -1,11 +1,10 @@
 package com.bit.api.manager;
 
 import com.bit.constance.DBConfig;
-import com.bit.model.Database;
-import com.bit.model.DatabaseInfo;
 import com.bit.exception.NoNameDatabaseException;
 import com.bit.exception.SameNameDatabaseException;
-import com.bit.model.Table;
+import com.bit.model.Database;
+import com.bit.model.DatabaseInfo;
 import com.bit.utils.FileUtil;
 import com.bit.utils.KryoUtil;
 import org.springframework.stereotype.Component;
