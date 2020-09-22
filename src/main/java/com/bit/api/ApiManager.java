@@ -272,7 +272,7 @@ public class ApiManager {
 
     }
 
-    public List<String> getTableColumns(String tableName) {
+    public List<String> getTableColumns(String tableName) throws Exception {
         return databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).getTableColumns();
     }
 
