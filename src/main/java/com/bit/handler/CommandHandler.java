@@ -19,10 +19,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author aerfafish
@@ -46,7 +43,7 @@ public class CommandHandler {
          * 增加其他处理
          */
 
-
+       // String[] keyWord = {"select"}
         List<CommandContent> commandContents = new ArrayList<>();
 
         CharStream stream = CharStreams.fromString(command.toUpperCase()); // 将命令读入字节符号流
@@ -58,6 +55,10 @@ public class CommandHandler {
         SqlCommandVisitor sqlCommandVisitor = new SqlCommandVisitor(commandContents);
         sqlCommandVisitor.visit(tree);
 
+
+        /**
+         * subCommandOfWhere no logical operator deal!!!!
+         */
 
         for(CommandContent content : commandContents){
             HandlerResult handlerResult = new HandlerResult();
@@ -230,6 +231,20 @@ public class CommandHandler {
                     apiManager.updateData(query, update, content.getTableNames().get(0).getTableName());
                     break;
                 case select:
+                    Map<String,TableData> tableDataMap = new HashMap<>();
+                    for(TableName tn : content.getTableNames()){
+                        if(tn.getNext() == null) {
+                            tableDataMap.put(tn.getTableName(), null);
+                        }
+                        else{
+
+                        }
+                    }
+
+
+
+
+
                     query = new Query();
                     if (content.getSubCommandOfWheres().size() != 0) {
                         for (SubCommandOfWhere subCommandOfWhere : content.getSubCommandOfWheres()) {
@@ -265,13 +280,14 @@ public class CommandHandler {
                     }
                     List<TableData> tableDatas = apiManager.selectData(query, content.getTableNames().get(0).getTableName());
                     for (TableData tableData : tableDatas) {
-                        data.add(tableData.getData());
+                        List<Object> tempData = new ArrayList<>();
+                        for(int i = 0; i < columnNames.size(); i++) {
+                            tempData.add(tableData.getData().get(columnNames.get(i)));
+                        }
+                        data.add(tempData);
                     }
-                    Set<String> nameSet = tableDatas.get(0).getData().keySet();
-                    List<String> columnNameList = new ArrayList<>();
-                    columnNameList.addAll(nameSet);
                     handlerResult.setData(data);
-                    handlerResult.setColumns(columnNameList);
+                    handlerResult.setColumns(columnNames);
                     break;
             }
             //handlerResult here

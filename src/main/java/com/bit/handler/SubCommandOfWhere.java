@@ -9,6 +9,7 @@ public class SubCommandOfWhere {
     String valueFirst = null;
     String valueSecond = null;
 
+    String logicalOperation;
 
     SubCommandOfWhere(ColumnName columnNameLeft, String operation, ColumnName columnNameRight){
         this.operation = operation;
@@ -64,5 +65,13 @@ public class SubCommandOfWhere {
 
     public Boolean getRightIsColumn() {
         return rightIsColumn;
+    }
+
+    public void setLogicalOperation(String logicalOperation) {
+        this.logicalOperation = logicalOperation;
+    }
+
+    public String getLogicalOperation() {
+        return logicalOperation;
     }
 }

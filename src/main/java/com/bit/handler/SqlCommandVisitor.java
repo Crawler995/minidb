@@ -396,7 +396,13 @@ public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
     @Override
     public CommandContent visitLogicalExpression(MySqlParser.LogicalExpressionContext ctx) {
         CommandContent content = new CommandContent();
-        content.addSubCommandOfWheres(visit(ctx.expression(0)).getSubCommandOfWheres());
+        List<SubCommandOfWhere> subCommandOfWheres = visit(ctx.expression(0)).getSubCommandOfWheres();
+        SubCommandOfWhere subCommandOfWhere = subCommandOfWheres.get(subCommandOfWheres.size() - 1);
+        subCommandOfWheres.remove(subCommandOfWheres.size() - 1);
+        subCommandOfWhere.setLogicalOperation(ctx.logicalOperator().getText());
+        subCommandOfWheres.add(subCommandOfWhere);
+
+        content.addSubCommandOfWheres(subCommandOfWheres);
         content.addSubCommandOfWheres(visit(ctx.expression(1)).getSubCommandOfWheres());
 
         return content;
@@ -560,13 +566,65 @@ public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
     public CommandContent visitTableSourceBase(MySqlParser.TableSourceBaseContext ctx) {
         CommandContent content = new CommandContent();
         TableName left = visit(ctx.tableSourceItem()).getTableNames().get(0);
+        List<TableName> tableNameList = new ArrayList<>();
         content.addTableName(left);
         /**
          * Todo:joinPart
          */
+
+
         if(ctx.joinPart() != null){
             TableName right;
+            for(MySqlParser.JoinPartContext joinPartContext : ctx.joinPart()){
+                right = visit(joinPartContext).getTableNames().get(0);
+                left.setJoin(right.getBeJoinType(),right);
+                left = right;
+            }
+
         }
+
+        return content;
+    }
+
+    @Override
+    public CommandContent visitInnerJoin(MySqlParser.InnerJoinContext ctx) {
+        TableName tableName = visit(ctx.tableSourceItem()).getTableNames().get(0);
+        tableName.setBeJoinType(TableName.JoinType.innerJoin);
+        if(ctx.expression() != null){
+            tableName.addJoinExpression(visit(ctx.expression()).getSubCommandOfWheres());
+        }
+
+        CommandContent content = new CommandContent();
+        content.addTableName(tableName);
+
+        return content;
+    }
+
+
+    @Override
+    public CommandContent visitOuterJoin(MySqlParser.OuterJoinContext ctx) {
+        TableName tableName = visit(ctx.tableSourceItem()).getTableNames().get(0);
+        if(ctx.LEFT() != null){
+            tableName.setBeJoinType(TableName.JoinType.leftJoin);
+        }
+        else{
+            tableName.setBeJoinType(TableName.JoinType.rightJoin);
+        }
+        tableName.addJoinExpression(visit(ctx.expression()).getSubCommandOfWheres());
+
+        CommandContent content = new CommandContent();
+        content.addTableName(tableName);
+
+        return content;
+    }
+
+    @Override
+    public CommandContent visitNaturalJoin(MySqlParser.NaturalJoinContext ctx) {
+        TableName tableName = visit(ctx.tableSourceItem()).getTableNames().get(0);
+        tableName.setBeJoinType(TableName.JoinType.naturalJoin);
+
+        CommandContent content = new CommandContent();
+        content.addTableName(tableName);
 
         return content;
     }
