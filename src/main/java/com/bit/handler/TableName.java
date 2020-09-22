@@ -1,17 +1,51 @@
 package com.bit.handler;
 
+import org.apache.catalina.LifecycleState;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class TableName extends RelatedName{
     public enum JoinType{
-        noJoin,join,outJoin,innerJoin
+        noJoin,outJoin,innerJoin,leftJoin,rightJoin,naturalJoin
     }
     JoinType joinType = JoinType.noJoin;
+    JoinType beJoinType = JoinType.noJoin;
 
-    TableName next;
-    TableName before;
-    public void setJoin(JoinType joinType,TableName next){
+    TableName next = null;
+    TableName before = null;
+
+    List<SubCommandOfWhere> joinExpression = new ArrayList<>();
+
+    public void addJoinExpression(List<SubCommandOfWhere> joinExpression) {
+        this.joinExpression.addAll(joinExpression);
+    }
+    public void addJoinExpression(SubCommandOfWhere joinExpression){
+        this.joinExpression.add(joinExpression);
+    }
+
+    public List<SubCommandOfWhere> getJoinExpression() {
+        return joinExpression;
+    }
+    public SubCommandOfWhere getJoinExpression(int idx){
+        return joinExpression.get(idx);
+    }
+
+    public void setJoin(JoinType joinType, TableName next){
         this.joinType = joinType;
         this.next = next;
         next.setBefore(this);
+    }
+
+    public void setBeJoinType(JoinType beJoinType) {
+        this.beJoinType = beJoinType;
+    }
+
+    public JoinType getJoinType(){
+        return joinType;
+    }
+    public JoinType getBeJoinType(){
+        return beJoinType;
     }
 
     TableName(String tableName, String aliasName, String databaseName) {
