@@ -85,7 +85,9 @@ public class CommandHandler {
                     apiManager.createDatabase(new Database(content.getDatabaseName(), null));
                     break;
                 case createIndex:
-                    apiManager.createIndex(content.getIndexName().getTableName(), content.getIndexName().getColumnName());
+                    for(String s : content.getIndexName().getColumnNames()) {
+                        apiManager.createIndex(content.getIndexName().getTableName(), s);
+                    }
                     break;
                 case createTable:
                     List<ColumnInfo> columnInfos = new ArrayList<>();

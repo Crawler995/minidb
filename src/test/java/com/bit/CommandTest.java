@@ -24,7 +24,7 @@ public class CommandTest {
 
     @Test
     public void commandTest() {
-        String command = "show databases;\nuse DB1;\nshow tables;";
+        String command = "create index index_name on table1(Table1_ID)";
         try {
             List<HandlerResult> handlerResult = commandHandler.handle(command);
             System.out.println("");
