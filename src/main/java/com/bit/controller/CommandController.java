@@ -1,10 +1,12 @@
 package com.bit.controller;
 
 import com.bit.api.manager.DatabaseManager;
+import com.bit.exception.SqlErrorException;
 import com.bit.handler.CommandHandler;
 import com.bit.handler.HandlerResult;
 import com.bit.response.CurrentDatabaseResponse;
 import com.bit.response.RunSqlResponse;
+import com.bit.response.Error;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,6 +47,14 @@ public class CommandController {
             runSqlResponse.setCurDatabase(handlerResult.getCurDatabase());
             runSqlResponse.setData(handlerResult.getData());
             runSqlResponse.setStatus(true);
+        } catch (SqlErrorException sqlErrorException) {
+            Error error = new Error();
+            error.setRow(sqlErrorException.getRow());
+            error.setColumn(sqlErrorException.getColumn());
+            error.setText(sqlErrorException.getText());
+            runSqlResponse.setError(error);
+            runSqlResponse.setStatus(false);
+            runSqlResponse.setMessage("row " + error.getRow() + ", column " + error.getColumn() + ", " + error.getText());
         } catch (Exception e) {
             runSqlResponse.setMessage(e.getMessage() == null ? "" : e.getMessage());
             runSqlResponse.setStatus(false);
@@ -52,7 +62,7 @@ public class CommandController {
         }
         runSqlResponse.setTime(sdf.format(date));
         long endTime = System.currentTimeMillis();
-        runSqlResponse.setTotalTime((endTime-startTime)+"");
+        runSqlResponse.setTotalTime((endTime - startTime) + "");
         return runSqlResponse;
     }
 
