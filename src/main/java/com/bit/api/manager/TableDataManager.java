@@ -200,7 +200,6 @@ public class TableDataManager {
     }
 
     public void update(Query query, Update update) throws Exception {
-        List<TableData> selectTableDataList = new LinkedList<>();
         Set<Long> pageNumList = new HashSet<>();
         long length = new File(dataFilePath).length();
         String indexName = getIndex(update);
@@ -616,6 +615,14 @@ public class TableDataManager {
             if (type == DataType.FLOAT) {
                 String value = (String) entry.getValue();
                 entry.setValue(Float.parseFloat(value));
+            }
+            if (type == DataType.STRING) {
+                String value = (String) entry.getValue();
+                if (value.indexOf("\"") == 0 && value.lastIndexOf("\"") == value.length()-1) {
+                    entry.setValue(value.substring(1, value.length()-1));
+                } else {
+                    entry.setValue(value);
+                }
             }
         }
     }
