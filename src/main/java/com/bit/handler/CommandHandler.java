@@ -59,7 +59,7 @@ public class CommandHandler {
         /**
          * subCommandOfWhere no logical operator deal!!!!
          */
-
+        SelectManager selectManager = new SelectManager(apiManager);
         for(CommandContent content : commandContents){
             HandlerResult handlerResult = new HandlerResult();
             List<String> columns = new ArrayList<>();
@@ -231,18 +231,29 @@ public class CommandHandler {
                     apiManager.updateData(query, update, content.getTableNames().get(0).getTableName());
                     break;
                 case select:
-                    Map<String,TableData> tableDataMap = new HashMap<>();
-                    for(TableName tn : content.getTableNames()){
-                        if(tn.getNext() == null) {
-                            tableDataMap.put(tn.getTableName(), null);
-                        }
-                        else{
-                            
-                        }
-                    }
-
-
-
+//                    List<TableData> result;
+//                    switch (content.getTableNames().size()){
+//                        case 2:
+//                            result = selectManager.Join(content.getTableNames().get(0).getTableName(),
+//                                    content.getTableNames().get(0).getTableName(),
+//                                    content.getSubCommandOfWheres(),
+//                                    TableName.JoinType.innerJoin);
+//                            break;
+//                        case 1:
+//                            TableName temp = content.getTableNames().get(0);
+//                            if(temp.getNext() != null){
+//                                result = selectManager.Join(temp.getTableName(),
+//                                        temp.getNext().getTableName(),
+//                                        content.getSubCommandOfWheres(),
+//                                        temp.getJoinType());
+//                            }
+//                            else{
+//
+//                            }
+//                            break;
+//                        default:
+//                            throw new Exception("Not Supported yet");
+//                    }
 
 
                     query = new Query();
@@ -276,13 +287,17 @@ public class CommandHandler {
                     }
                     List<String> columnNames = new ArrayList<>();
                     for(ColumnName name : content.getColumnNames()){
+                        if(name.equals("*")){
+                            columnNames = apiManager.getTableColumns(content.getTableNames().get(0).getTableName());
+                            break;
+                        }
                         columnNames.add(name.getColumnName());
                     }
                     List<TableData> tableDatas = apiManager.selectData(query, content.getTableNames().get(0).getTableName());
                     for (TableData tableData : tableDatas) {
-                        List<Object> tempData = new ArrayList<>();
-                        for(int i = 0; i < columnNames.size(); i++) {
-                            tempData.add(tableData.getData().get(columnNames.get(i)));
+                        Map<String,Comparable> tempData = new HashMap<>();
+                        for(String name : columnNames){
+                            tempData.put(name,tableData.getData().get(name));
                         }
                         data.add(tempData);
                     }
