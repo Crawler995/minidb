@@ -47,7 +47,7 @@ public class DatabaseManager {
     public void createDatabase(Database database) throws SameNameDatabaseException {
         // 如果当前存在该数据库
         if (containDatabase(database.getDatabaseName())) {
-            throw new SameNameDatabaseException("存在该数据库，无法创建");
+            throw new SameNameDatabaseException("Can't create database '"+database.getDatabaseName()+"'; database exists\n");
         }
         String filePath = database.getFilePath();
         if (filePath == null) {
@@ -64,7 +64,7 @@ public class DatabaseManager {
         // 如果当前存在该数据库
         Database database = removeDatabase(originDatabase.getDatabaseName());
         if (database == null) {
-            throw new NoNameDatabaseException("不存在该数据库，无法修改");
+            throw new NoNameDatabaseException("Unknown database "+ "'" +originDatabase.getDatabaseName()+ "'");
         }
         // 修改全局储存文件中的数据库名
         if (newDatabase.getFilePath() == null) {
@@ -80,7 +80,7 @@ public class DatabaseManager {
         // 如果当前存在该数据库
         Database database = removeDatabase(databaseName);
         if (database == null) {
-            throw new NoNameDatabaseException("不存在该数据库，无法删除");
+            throw new NoNameDatabaseException("Unknown database "+ "'" +databaseName+ "'");
         }
         // todo:删除数据库中的表和数据
         String filePath = database.getFilePath();
@@ -120,7 +120,7 @@ public class DatabaseManager {
             }
         }
         if (tableManager == null) {
-            throw new Exception("不存在该数据库");
+            throw new Exception("Unknown database "+ "'" +databaseName+ "'");
         }
         return tableManager;
     }

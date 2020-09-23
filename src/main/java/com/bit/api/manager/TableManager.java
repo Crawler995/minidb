@@ -51,14 +51,14 @@ public class TableManager {
             }
         }
         if (tableDataManager == null) {
-            throw new Exception("不存在对应的表");
+            throw new Exception("Table '"+databaseName+"."+tableName+"' doesn't exist");
         }
         return tableDataManager;
     }
 
     public void createTable(Table table) throws Exception {
         if (containTable(table.getTableName())) {
-            throw new SameNameTableException("已经有对应表，无法创建");
+            throw new SameNameTableException("Table '"+table.getTableName()+"' already exists");
         }
         if (table.getColumnInfo().size() == 0) {
             throw new Exception("请添加至少一列");

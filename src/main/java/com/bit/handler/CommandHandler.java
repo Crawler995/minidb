@@ -50,6 +50,8 @@ public class CommandHandler {
         MySqlLexer lexer = new MySqlLexer(stream);//新建一个词法分析器，处理输入的字节流
         CommonTokenStream token = new CommonTokenStream(lexer);//新建一个词法符号的缓冲区，用于存储词法分析器将生成的词法符号
         MySqlParser parser = new MySqlParser(token);//新建一个语法分析器，处理词法符号缓冲区的内容
+        parser.removeErrorListeners();
+        parser.addErrorListener(new ErrorListener());
         ParseTree tree = parser.root();//针对root规则，开始语法分析，生成一颗树
 
         SqlCommandVisitor sqlCommandVisitor = new SqlCommandVisitor(commandContents);

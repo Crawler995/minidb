@@ -57,7 +57,7 @@ public class ApiManager {
      */
     public String getCurrentDatabase() throws Exception {
         if (currentDatabase == null) {
-            throw new Exception("未指定当前数据库");
+            throw new Exception("No database selected");
         }
         return currentDatabase;
     }
@@ -106,7 +106,7 @@ public class ApiManager {
      */
     public List<String> showTables() throws Exception {
         if (currentDatabase == null) {
-            throw new Exception("未指定当前数据库");
+            throw new Exception("No database selected");
         }
         return databaseManager.getTableManager(currentDatabase).getTables();
     }
@@ -122,7 +122,7 @@ public class ApiManager {
      */
     public void createTable(@NonNull Table table) throws Exception {
         if (currentDatabase == null) {
-            throw new Exception("未指定当前数据库");
+            throw new Exception("No database selected");
         }
         databaseManager.getTableManager(currentDatabase).createTable(table);
     }
@@ -136,7 +136,7 @@ public class ApiManager {
      */
     public void deleteTable(@NonNull String tableName) throws Exception {
         if (currentDatabase == null) {
-            throw new Exception("未指定当前数据库");
+            throw new Exception("No database selected");
         }
         databaseManager.getTableManager(currentDatabase).deleteTable(tableName);
     }
@@ -149,7 +149,7 @@ public class ApiManager {
      */
     public void updateTables(@NonNull Table table, @NonNull Table newTable) throws Exception {
         if (currentDatabase == null) {
-            throw new Exception("未指定当前数据库");
+            throw new Exception("No database selected");
         }
         databaseManager.getTableManager(currentDatabase).updateTable(table, newTable);
     }
@@ -163,7 +163,7 @@ public class ApiManager {
      */
     public void createIndex(@NonNull String tableName,@NonNull String columnName) throws Exception {
         if (currentDatabase == null) {
-            throw new Exception("未指定当前数据库");
+            throw new Exception("No database selected");
         }
         databaseManager.getTableManager(currentDatabase).createIndex(tableName, columnName, null);
     }
@@ -176,7 +176,7 @@ public class ApiManager {
      */
     public void deleteIndex(@NonNull String tableName,@NonNull String columnName) throws Exception {
         if (currentDatabase == null) {
-            throw new Exception("未指定当前数据库");
+            throw new Exception("No database selected");
         }
         databaseManager.getTableManager(currentDatabase).deleteIndex(tableName, columnName);
     }
@@ -190,7 +190,7 @@ public class ApiManager {
      */
     public void insertData(@NonNull Update update, @NonNull String tableName) throws Exception {
         if (currentDatabase == null) {
-            throw new Exception("未指定当前数据库");
+            throw new Exception("No database selected");
         }
         Map<String, Comparable> modifyData = update.getModifyData();
         if (modifyData == null || modifyData.size() == 0) {
@@ -212,7 +212,7 @@ public class ApiManager {
      */
     public void deleteData(@NonNull Query query, @NonNull String tableName) throws Exception {
         if (currentDatabase == null) {
-            throw new Exception("未指定当前数据库");
+            throw new Exception("No database selected");
         }
         databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).delete(query);
     }
@@ -228,7 +228,7 @@ public class ApiManager {
      */
     public List<TableData> selectData(@NonNull Query query, @NonNull String tableName, Boolean useIndex) throws Exception {
         if (currentDatabase == null) {
-            throw new Exception("未指定当前数据库");
+            throw new Exception("No database selected");
         }
         return databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).select(query, useIndex);
     }
@@ -243,7 +243,7 @@ public class ApiManager {
      */
     public List<TableData> selectData(@NonNull Query query, @NonNull String tableName) throws Exception {
         if (currentDatabase == null) {
-            throw new Exception("未指定当前数据库");
+            throw new Exception("No database selected");
         }
         return databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).select(query);
     }
@@ -258,7 +258,7 @@ public class ApiManager {
      */
     public void updateData(@NonNull Query query, @NonNull Update update, @NonNull String tableName) throws Exception {
         if (currentDatabase == null) {
-            throw new Exception("未指定当前数据库");
+            throw new Exception("No database selected");
         }
         databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).update(query, update);
     }
