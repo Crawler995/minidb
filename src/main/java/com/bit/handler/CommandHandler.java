@@ -203,16 +203,19 @@ public class CommandHandler {
                         case 1:
                             TableName temp = content.getTableNames().get(0);
                             if(temp.getNext() != null){
-                                List<SubCommandOfWhere> temp_1 = new ArrayList<>();
+                                List<SubCommandOfWhere> temp1 = new ArrayList<>();
                                 if(temp.getNext().getJoinExpression()!=null) {
-                                    temp_1.addAll(temp.getNext().getJoinExpression());
+                                    List<SubCommandOfWhere> temp2 = temp.getNext().getJoinExpression();
+                                    SubCommandOfWhere temp3 = temp2.get(temp2.size() - 1);
+                                    temp3.setLogicalOperation("AND");
+                                    temp1.addAll(temp2);
                                 }
                                 if(content.getSubCommandOfWheres() != null){
-                                    temp_1.addAll(content.getSubCommandOfWheres());
+                                    temp1.addAll(content.getSubCommandOfWheres());
                                 }
                                 result = selectManager.join(temp.getTableName(),
                                         temp.getNext().getTableName(),
-                                        temp_1,
+                                        temp1,
                                         temp.getJoinType());
                             }
                             else{

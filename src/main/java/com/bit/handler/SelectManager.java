@@ -6,10 +6,7 @@ import com.bit.api.model.Query;
 import com.bit.model.TableData;
 import com.sun.javafx.collections.SortableList;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SelectManager {
     ApiManager apiManager;
@@ -124,7 +121,9 @@ public class SelectManager {
             List<SubCommandOfWhere> commands = subCommandGroup.getGroup();
 
             // 将直接查询和连接查询分开
-            for (SubCommandOfWhere command : commands) {
+            Iterator<SubCommandOfWhere> iterator = commands.iterator();
+            while (iterator.hasNext()) {
+                SubCommandOfWhere command = iterator.next();
                 if (!command.getRightIsColumn()) {
                     String tableName = command.getColumnNameLeft().getTableName();
                     String columnName = command.getColumnNameLeft().getColumnName();
@@ -135,7 +134,7 @@ public class SelectManager {
                     } else {
                         throw new Exception("Wrong Join Condition.");
                     }
-                    commands.remove(command);
+                    iterator.remove();
                 }
             }
             //直接查询
@@ -177,10 +176,9 @@ public class SelectManager {
 
                             switch (joinType){
                                 case innerJoin:
-
                                     for (TableData leftData : leftTable) {
                                         for (TableData rightData : rightTable) {
-                                            if (leftData.getData().get(leftColumnName) == rightData.getData().get(rightColumnName)) {
+                                            if (leftData.getData().get(leftColumnName).compareTo(rightData.getData().get(rightColumnName)) == 0) {
                                                 Map<String,Comparable> temp = new HashMap<>();
                                                 for(String leftName : leftTableColumn){
                                                     temp.put(leftName,leftData.getData().get(leftName));
@@ -224,7 +222,7 @@ public class SelectManager {
                 temp.put(leftName,leftData.getData().get(leftName));
             }
             for (TableData rightData : rightTable) {
-                if (leftData.getData().get(leftColumnName) == rightData.getData().get(rightColumnName)) {
+                if (leftData.getData().get(leftColumnName).compareTo(rightData.getData().get(rightColumnName)) == 0) {
                     flag = true;
                     for(String rightName : rightTableColumn){
                         temp.put(rightName,rightData.getData().get(rightName));

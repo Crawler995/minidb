@@ -28,8 +28,5 @@ public class RunSqlResponse {
     List<String> columns = new ArrayList<>();
 
     List<Object> data = new ArrayList<>();
-<<<<<<< HEAD
-=======
 
->>>>>>> e6f70ebd947b55eee657a861be9860c12eead655
 }
