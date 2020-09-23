@@ -393,6 +393,11 @@ public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
     @Override
     public CommandContent visitLogicalExpression(MySqlParser.LogicalExpressionContext ctx) {
         CommandContent content = new CommandContent();
+        if(visit(ctx.expression(0)).getOperation() == CommandContent.Operation.errorCommand
+                || visit(ctx.expression(1)).getOperation() == CommandContent.Operation.errorCommand){
+            content.setOperation(CommandContent.Operation.errorCommand);
+            return content;
+        }
         List<SubCommandOfWhere> subCommandOfWheres = visit(ctx.expression(0)).getSubCommandOfWheres();
         SubCommandOfWhere subCommandOfWhere = subCommandOfWheres.get(subCommandOfWheres.size() - 1);
         subCommandOfWheres.remove(subCommandOfWheres.size() - 1);
@@ -402,6 +407,14 @@ public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
         content.addSubCommandOfWheres(subCommandOfWheres);
         content.addSubCommandOfWheres(visit(ctx.expression(1)).getSubCommandOfWheres());
 
+        return content;
+    }
+
+    @Override
+    public CommandContent visitNestedExpressionAtom(MySqlParser.NestedExpressionAtomContext ctx) {
+        CommandContent content = new CommandContent();
+        content.setRawCommand(rawCommand);
+        content.setOperation(CommandContent.Operation.errorCommand);
         return content;
     }
 
@@ -457,7 +470,11 @@ public class SqlCommandVisitor extends MySqlParserBaseVisitor<CommandContent> {
     @Override
     public CommandContent visitLikePredicate(MySqlParser.LikePredicateContext ctx) {
         CommandContent content = new CommandContent();
-        ColumnName columnName = visit(ctx.predicate(0)).getColumnNames().get(0);
+        CommandContent tempContent = visit(ctx.predicate(0));
+        if(tempContent.getOperation() == CommandContent.Operation.errorCommand){
+            return tempContent;
+        }
+        ColumnName columnName = tempContent.getColumnNames().get(0);
         String operation;
         if(ctx.NOT() != null){
             operation = "NOT LIKE";

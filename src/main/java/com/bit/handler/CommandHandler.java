@@ -66,7 +66,7 @@ public class CommandHandler {
             List<Object> data = new ArrayList<>();
             switch (content.getOperation()) {
                 case errorCommand:
-                    break;
+                    throw new Exception("Not supported yet");
                 case createDatabase:
                     apiManager.createDatabase(new Database(content.getDatabaseName(), null));
                     break;
@@ -237,7 +237,7 @@ public class CommandHandler {
                             tableDataMap.put(tn.getTableName(), null);
                         }
                         else{
-
+                            
                         }
                     }
 
