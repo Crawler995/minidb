@@ -25,7 +25,7 @@ public class SelectManager {
                 query.addCriteria(Criteria.where(columnName).gte(value));
             }
             if (operate.equals(">=")) {
-                query.addCriteria(Criteria.where(columnName).lte(value));
+                query.addCriteria(Criteria.where(columnName).gte(value));
             }
             if (operate.equals("=")) {
                 query.addCriteria(Criteria.where(columnName).is(value));
