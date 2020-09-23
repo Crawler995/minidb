@@ -33,7 +33,7 @@ public class CommandHandler {
 
     public CommandHandler() {}
 
-    public HandlerResult handle(String command) throws Exception {
+    public List<HandlerResult> handle(String command) throws Exception {
         System.out.println("处理命令：" + command);
         if ("exit".equals(command)) {
             System.exit(0);
@@ -59,8 +59,10 @@ public class CommandHandler {
         /**
          * subCommandOfWhere no logical operator deal!!!!
          */
+        List<HandlerResult> results = new ArrayList<>();
         SelectManager selectManager = new SelectManager(apiManager);
         for(CommandContent content : commandContents){
+            long startTime = System.currentTimeMillis();
             HandlerResult handlerResult = new HandlerResult();
             List<String> columns = new ArrayList<>();
             List<Object> data = new ArrayList<>();
@@ -215,14 +217,15 @@ public class CommandHandler {
                         default:
                             throw new Exception("Not Supported yet");
                     }
-                    handlerResult = selectManager.getResult(result,content);
+                    handlerResult =  selectManager.getResult(result,content);
                     break;
             }
             //handlerResult here
-            return handlerResult;
+            long stopTime = System.currentTimeMillis();
+            results.add(handlerResult);
         }
 
-        return null;
+        return results;
     }
 
 
