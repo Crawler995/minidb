@@ -321,7 +321,7 @@ public class DataTest {
 
     @Test
     public void insertTest() throws Exception {
-//        apiManager.createDatabase(new Database("DB1", null));
+        apiManager.createDatabase(new Database("DB1", null));
         apiManager.useDatabase("DB1");
 
         Table table = new Table();
@@ -338,20 +338,20 @@ public class DataTest {
         columnInfos.add(new ColumnInfo("TABLE1_AGE", DataType.INT));
         table.setColumnInfo(columnInfos);
         table.setTableName("TABLE1");
-//        apiManager.createTable(table);
+        apiManager.createTable(table);
         long startTime = System.currentTimeMillis();
-        for (long i = 0; i < 25000; i++) {
+        for (long i = 0; i < 20000; i++) {
             Update update = new Update();
 //            update.set("TABLE2_ID", i+"");
 //            update.set("TABLE2_FRIEND_ID", i+"");
 //            update.set("TABLE2_LAST_NAME", "LAST"+(i));
 //            update.set("TABLE2_FIRST_NAME", "FIRST"+(i));
             update.set("TABLE1_ID", i+"");
-            update.set("TABLE1_LAST_NAME", "LAST"+(i));
-            update.set("TABLE1_FIRST_NAME", "FIRST"+(i));
+            update.set("TABLE1_LAST_NAME", "last"+(i));
+            update.set("TABLE1_FIRST_NAME", "first"+(i));
             update.set("TABLE1_AGE", (20+1)+"");
-            update.set("TABLE1_ADDRESS", "ADDRESS2"+(i+1));
-            update.set("TABLE1_CITY", "CITY"+(i+1));
+            update.set("TABLE1_ADDRESS", "address"+(i+1));
+            update.set("TABLE1_CITY", "city"+(i+1));
 //            apiManager.insertData(update, "TABLE2");
             apiManager.insertData(update, "TABLE1");
         }

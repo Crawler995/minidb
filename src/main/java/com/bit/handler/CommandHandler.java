@@ -44,9 +44,7 @@ public class CommandHandler {
         final Pattern pattern = Pattern.compile(regex);
         final Matcher matcher = pattern.matcher(command);
         while (matcher.find()) {
-            System.out.println("Full match: " + matcher.group(0));
             for (int i = 0; i < matcher.groupCount(); i++) {
-                System.out.println("Group " + i + ": " + matcher.group(i));
                 command = command.replace(matcher.group(i), matcher.group(i).toLowerCase());
             }
         }

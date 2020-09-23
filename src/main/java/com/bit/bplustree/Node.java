@@ -66,7 +66,7 @@ public class Node extends AbstractNode {
     @Override
     public void insert(Point newPoint, BplusTree tree) {
         for (int i = 0; i < children.size(); i++) {
-            if (children.get(i).getKey().compareTo(newPoint.getKey()) >= 0) {
+            if (!children.get(i).getKey().equals(0L) && !children.get(i).getKey().equals(-1L) && children.get(i).getKey().compareTo(newPoint.getKey()) >= 0) {
                 AbstractNode node = tree.getNode(children.get(i - 1).getValue());
                 node.insert(newPoint, tree);
                 return;
