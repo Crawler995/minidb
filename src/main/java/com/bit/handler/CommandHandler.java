@@ -42,8 +42,6 @@ public class CommandHandler {
         /**
          * 增加其他处理
          */
-
-       // String[] keyWord = {"select"}
         List<CommandContent> commandContents = new ArrayList<>();
 
         CharStream stream = CharStreams.fromString(command.toUpperCase()); // 将命令读入字节符号流
@@ -128,14 +126,24 @@ public class CommandHandler {
                     columns.add("Database Name");
                     handlerResult.setColumns(columns);
                     List<String> databases = apiManager.showDatabases();
+                    for(String t :databases){
+                        Map<String,Comparable> tempMap = new HashMap<>();
+                        tempMap.put("Database Name",t);
+                        data.add(tempMap);
+                    }
                     data.addAll(databases);
                     handlerResult.setData(data);
                     break;
                 case showTables:
-                    columns.add("Database Name");
+                    columns.add("Table Name");
                     handlerResult.setColumns(columns);
                     List<String> tables = apiManager.showTables();
-                    data.addAll(tables);
+
+                    for(String t :tables){
+                        Map<String,Comparable> tempMap = new HashMap<>();
+                        tempMap.put("Table Name",t);
+                        data.add(tempMap);
+                    }
                     handlerResult.setData(data);
                     break;
                 case use:

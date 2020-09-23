@@ -22,7 +22,7 @@ public class CommandTest {
 
     @Test
     public void commandTest() {
-        String command = "";
+        String command = "select id, last_name, address from table1 where id > 5 and address like \"address_\";";
         try {
             HandlerResult handlerResult = commandHandler.handle(command);
             System.out.println(handlerResult);
