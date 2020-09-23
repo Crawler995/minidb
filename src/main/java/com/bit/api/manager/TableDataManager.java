@@ -291,6 +291,7 @@ public class TableDataManager {
                         Comparable key = transferObject(tableData.getData().get(columnName), columnInfo.getType());
                         indexManager.insert(key, i);
                     }
+                    indexManager.updateToFile();
                 }
                 return;
             }

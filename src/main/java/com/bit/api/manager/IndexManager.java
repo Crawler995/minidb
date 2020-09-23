@@ -45,6 +45,10 @@ public class IndexManager {
         tree.update(key, originPageNum, newPageNum);
     }
 
+    public void updateToFile() {
+        tree.updateToFile();
+    }
+
     private void initIndexManager() {
         tree = new BplusTree(filePath, 100, 100);
     }

@@ -172,6 +172,14 @@ public class BplusTree {
         }
     }
 
+    public void updateToFile() {
+        for (long i = 0; i < nodeCache.size(); i++) {
+            AbstractNode node = nodeCache.get(i);
+            byte[] bytes = KryoUtil.serialize(node);
+            FileUtil.writeFileByte(filePath, i, bytes);
+        }
+    }
+
     public void clearCache() {
         nodeCache.clear();
     }
