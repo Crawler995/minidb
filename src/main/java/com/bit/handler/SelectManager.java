@@ -47,6 +47,9 @@ public class SelectManager {
     }
 
     public HandlerResult getResult(List<TableData> tableDatas, CommandContent content) throws Exception {
+        if(tableDatas == null){
+        }
+
         HandlerResult handlerResult = new HandlerResult();
         List<String> columnNames = new ArrayList<>();
         List<Object> data = new ArrayList<>();
@@ -101,7 +104,7 @@ public class SelectManager {
             if(conditions.get(i).getLogicalOperation() != null) {
                 while (conditions.get(i).getLogicalOperation() != null && conditions.get(i).getLogicalOperation().equals("AND") && i < conditions.size()) {
                     subCommandGroup.add(conditions.get(i++));
-                    if (!conditions.get(i).getOperation().equals("AND")) {
+                    if (i < conditions.size() && !"AND".equals(conditions.get(i).getLogicalOperation())) {
                         subCommandGroup.add(conditions.get(i));
                         break;
                     }
@@ -176,9 +179,11 @@ public class SelectManager {
 
                             switch (joinType){
                                 case innerJoin:
+                                    boolean flag = false;
                                     for (TableData leftData : leftTable) {
                                         for (TableData rightData : rightTable) {
                                             if (leftData.getData().get(leftColumnName).compareTo(rightData.getData().get(rightColumnName)) == 0) {
+                                                flag = true;
                                                 Map<String,Comparable> temp = new HashMap<>();
                                                 for(String leftName : leftTableColumn){
                                                     temp.put(leftName,leftData.getData().get(leftName));
@@ -191,6 +196,18 @@ public class SelectManager {
                                                 target.add(data);
                                             }
                                         }
+                                    }
+                                    if(!flag){
+                                        Map<String,Comparable> temp = new HashMap<>();
+                                        for(String leftName : leftTableColumn){
+                                            temp.put(leftName,null);
+                                        }
+                                        for(String rightName : rightTableColumn){
+                                            temp.put(rightName,null);
+                                        }
+                                        TableData data = new TableData();
+                                        data.setData(temp);
+                                        target.add(data);
                                     }
                                     break;
                                 case leftJoin:
