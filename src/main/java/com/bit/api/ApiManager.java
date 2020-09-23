@@ -264,6 +264,9 @@ public class ApiManager {
     }
 
     public void clearIndexCache() throws Exception {
+        if (currentDatabase == null) {
+            throw new Exception("No database selected");
+        }
         List<String> databases = showDatabases();
         for (String database : databases) {
             for (String tableName : databaseManager.getTableManager(database).getTables()) {
@@ -274,10 +277,16 @@ public class ApiManager {
     }
 
     public List<String> getTableColumns(String tableName) throws Exception {
+        if (currentDatabase == null) {
+            throw new Exception("No database selected");
+        }
         return databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).getTableColumns();
     }
 
     public List<ColumnInfo> getColumnInfo(String tableName) throws Exception {
+        if (currentDatabase == null) {
+            throw new Exception("No database selected");
+        }
         return databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).getColumnInfo();
     }
 }

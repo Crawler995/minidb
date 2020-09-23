@@ -110,6 +110,9 @@ public class Criteria {
 
     public Criteria regex(String regex) throws Exception {
 //        return this.regex(regex, null);
+        if (regex.indexOf("\"") == 0 && regex.lastIndexOf("\"") == regex.length()-1) {
+            regex = regex.substring(1, regex.length()-1);
+        }
         Pattern pattern = Pattern.compile(regex);
         if (!this.isValue.equals(NOT_SET)) {
             throw new Exception("Multiple 'is' values declared. You need to use 'and' with multiple criteria");

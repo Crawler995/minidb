@@ -285,11 +285,14 @@ public class CommandHandler {
                             if (operate.equals("!=")) {
                                 query.addCriteria(Criteria.where(columnName).ne(value));
                             }
+                            if (operate.equals("LIKE")) {
+                                query.addCriteria(Criteria.where(columnName).regex(value));
+                            }
                         }
                     }
                     List<String> columnNames = new ArrayList<>();
                     for(ColumnName name : content.getColumnNames()){
-                        if(name.equals("*")){
+                        if(name.getColumnName().equals("*")){
                             columnNames = apiManager.getTableColumns(content.getTableNames().get(0).getTableName());
                             break;
                         }

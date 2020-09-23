@@ -47,7 +47,7 @@ public class SelectManager {
     }
 
     public List<TableData> Single(String tableName,List<SubCommandOfWhere> conditions){
-
+        return null;
     }
 
     public List<TableData> Join(String left, String right, List<SubCommandOfWhere> conditions, TableName.JoinType joinType) throws Exception {

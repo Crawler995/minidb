@@ -566,7 +566,7 @@ public class TableDataManager {
     }
 
     private void transferQuery(Criteria criteria, DataType type) throws Exception {
-        if (criteria.getIsValue() != Criteria.NOT_SET) {
+        if (criteria.getIsValue() != Criteria.NOT_SET && !(criteria.getIsValue() instanceof Pattern)) {
             criteria.setIsValue(transferString((String) criteria.getIsValue(), type));
             return;
         }
@@ -589,7 +589,7 @@ public class TableDataManager {
             }
             if (type == DataType.STRING) {
                 String value = (String) entry.getValue();
-                if (value.indexOf("\"") == 0 && value.lastIndexOf("\"") == 0) {
+                if (value.indexOf("\"") == 0 && value.lastIndexOf("\"") == value.length()-1) {
                     entry.setValue(value.substring(1, value.length()-1));
                 } else {
                     entry.setValue(value);
