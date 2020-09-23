@@ -35,7 +35,7 @@ public class Node extends AbstractNode {
     @Override
     public Set<Long> get(Comparable key, BplusTree tree) {
         for (int i = 0; i < children.size(); i++) {
-            if (children.get(i).getKey().compareTo(key) >= 0) {
+            if (!children.get(i).getKey().equals(0L) && !children.get(i).getKey().equals(-1L) && children.get(i).getKey().compareTo(key) >= 0) {
                 AbstractNode node = tree.getNode(children.get(i - 1).getValue());
                 return node.get(key, tree);
             }
@@ -50,7 +50,7 @@ public class Node extends AbstractNode {
     @Override
     public Set<Long> get(IndexQuery query, BplusTree tree) {
         for (int i = 0; i < children.size(); i++) {
-            if (children.get(i).getKey().compareTo(query.getLowKey()) >= 0) {
+            if (!children.get(i).getKey().equals(0L) && !children.get(i).getKey().equals(-1L) && children.get(i).getKey().compareTo(query.getLowKey()) >= 0) {
                 AbstractNode node = tree.getNode(children.get(i - 1).getValue());
                 return node.get(query.getLowKey(), tree);
             }
@@ -78,7 +78,7 @@ public class Node extends AbstractNode {
     @Override
     public void delete(Point deletePoint, BplusTree tree) {
         for (int i = 0; i < children.size(); i++) {
-            if (children.get(i).getKey().compareTo(deletePoint.getKey()) >= 0) {
+            if (!children.get(i).getKey().equals(0L) && !children.get(i).getKey().equals(-1L) && children.get(i).getKey().compareTo(deletePoint.getKey()) >= 0) {
                 tree.getNode(children.get(i - 1).getValue()).delete(deletePoint, tree);
                 return;
             }
@@ -166,7 +166,7 @@ public class Node extends AbstractNode {
 
     public void updatePoint(Comparable key, Long value, Long newValue, BplusTree tree) {
         for (int i = 0; i < children.size(); i++) {
-            if (children.get(i).getKey().compareTo(key) >= 0) {
+            if (!children.get(i).getKey().equals(0L) && !children.get(i).getKey().equals(-1L) && children.get(i).getKey().compareTo(key) >= 0) {
                 AbstractNode node = tree.getNode(children.get(i - 1).getValue());
                 node.updatePoint(key, value, newValue, tree);
                 return;

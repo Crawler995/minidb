@@ -324,36 +324,45 @@ public class DataTest {
         apiManager.createDatabase(new Database("DB1", null));
         apiManager.useDatabase("DB1");
 
-        Table table = new Table();
-        List<ColumnInfo> columnInfos = new ArrayList<>();
-//        columnInfos.add(new ColumnInfo("TABLE2_ID", DataType.INT));
-//        columnInfos.add(new ColumnInfo("TABLE2_FRIEND_ID", DataType.INT));
-//        columnInfos.add(new ColumnInfo("TABLE2_FIRST_NAME", DataType.STRING));
-//        columnInfos.add(new ColumnInfo("TABLE2_LAST_NAME", DataType.STRING));
-        columnInfos.add(new  ColumnInfo("TABLE1_ID", DataType.INT));
-        columnInfos.add(new ColumnInfo("TABLE1_LAST_NAME", DataType.STRING));
-        columnInfos.add(new ColumnInfo("TABLE1_FIRST_NAME", DataType.STRING));
-        columnInfos.add(new ColumnInfo("TABLE1_ADDRESS", DataType.STRING));
-        columnInfos.add(new ColumnInfo("TABLE1_CITY", DataType.STRING));
-        columnInfos.add(new ColumnInfo("TABLE1_AGE", DataType.INT));
-        table.setColumnInfo(columnInfos);
-        table.setTableName("TABLE1");
-        apiManager.createTable(table);
+        Table table1 = new Table();
+        List<ColumnInfo> columnInfos1 = new ArrayList<>();
+        columnInfos1.add(new  ColumnInfo("TABLE1_ID", DataType.INT));
+        columnInfos1.add(new ColumnInfo("TABLE1_LAST_NAME", DataType.STRING));
+        columnInfos1.add(new ColumnInfo("TABLE1_FIRST_NAME", DataType.STRING));
+        columnInfos1.add(new ColumnInfo("TABLE1_ADDRESS", DataType.STRING));
+        columnInfos1.add(new ColumnInfo("TABLE1_CITY", DataType.STRING));
+        columnInfos1.add(new ColumnInfo("TABLE1_AGE", DataType.INT));
+        table1.setColumnInfo(columnInfos1);
+        table1.setTableName("TABLE1");
+        apiManager.createTable(table1);
+
+        Table table2 = new Table();
+        List<ColumnInfo> columnInfos2 = new ArrayList<>();
+        columnInfos2.add(new ColumnInfo("TABLE2_ID", DataType.INT));
+        columnInfos2.add(new ColumnInfo("TABLE2_FRIEND_ID", DataType.INT));
+        columnInfos2.add(new ColumnInfo("TABLE2_FIRST_NAME", DataType.STRING));
+        columnInfos2.add(new ColumnInfo("TABLE2_LAST_NAME", DataType.STRING));
+        table2.setColumnInfo(columnInfos2);
+        table2.setTableName("TABLE2");
+        apiManager.createTable(table2);
         long startTime = System.currentTimeMillis();
         for (long i = 0; i < 20000; i++) {
             Update update = new Update();
-//            update.set("TABLE2_ID", i+"");
-//            update.set("TABLE2_FRIEND_ID", i+"");
-//            update.set("TABLE2_LAST_NAME", "LAST"+(i));
-//            update.set("TABLE2_FIRST_NAME", "FIRST"+(i));
             update.set("TABLE1_ID", i+"");
             update.set("TABLE1_LAST_NAME", "last"+(i));
             update.set("TABLE1_FIRST_NAME", "first"+(i));
             update.set("TABLE1_AGE", (20+1)+"");
             update.set("TABLE1_ADDRESS", "address"+(i+1));
             update.set("TABLE1_CITY", "city"+(i+1));
-//            apiManager.insertData(update, "TABLE2");
             apiManager.insertData(update, "TABLE1");
+        }
+        for (long i = 0; i < 20000; i++) {
+            Update update = new Update();
+            update.set("TABLE2_ID", i+"");
+            update.set("TABLE2_FRIEND_ID", i+"");
+            update.set("TABLE2_LAST_NAME", "LAST"+(i));
+            update.set("TABLE2_FIRST_NAME", "FIRST"+(i));
+            apiManager.insertData(update, "TABLE2");
         }
         long endTime = System.currentTimeMillis();
         System.out.println("插入数据花费时间：" + (endTime-startTime));
