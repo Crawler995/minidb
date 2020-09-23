@@ -28,7 +28,4 @@ public class RunSqlResponse {
     List<String> columns = new ArrayList<>();
 
     List<Object> data = new ArrayList<>();
-
-    Long tim
-
 }

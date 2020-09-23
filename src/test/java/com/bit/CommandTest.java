@@ -24,9 +24,10 @@ public class CommandTest {
 
     @Test
     public void commandTest() {
-        String command = "create  select * from table1 where id > 5 and address like \"address_\";";
+        String command = "show databases;\nuse DB1;\nshow tables;";
         try {
             List<HandlerResult> handlerResult = commandHandler.handle(command);
+            System.out.println("");
         } catch (Exception e) {
             e.printStackTrace();
         }
