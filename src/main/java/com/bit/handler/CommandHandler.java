@@ -33,7 +33,7 @@ public class CommandHandler {
 
     public CommandHandler() {}
 
-    public HandlerResult handle(String command) throws Exception {
+    public List<HandlerResult> handle(String command) throws Exception {
         System.out.println("处理命令：" + command);
         if ("exit".equals(command)) {
             System.exit(0);
