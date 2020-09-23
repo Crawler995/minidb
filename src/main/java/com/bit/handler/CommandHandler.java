@@ -159,65 +159,15 @@ public class CommandHandler {
                     }
                     break;
                 case delete:
-                    Query query = new Query();
-                    for (SubCommandOfWhere subCommandOfWhere : content.getSubCommandOfWheres()) {
-                        if (subCommandOfWhere.getRightIsColumn() || subCommandOfWhere.getLeftIsValue() || subCommandOfWhere.getValueSecond() != null) {
-                            throw new Exception("not supported yet");
-                        }
-                        columnName = subCommandOfWhere.getColumnNameLeft().getColumnName();
-                        String value = subCommandOfWhere.getValueFirst();
-                        String operate = subCommandOfWhere.getOperation();
-                        if (operate.equals(">")) {
-                            query.addCriteria(Criteria.where(columnName).gte(value));
-                        }
-                        if (operate.equals(">=")) {
-                            query.addCriteria(Criteria.where(columnName).lte(value));
-                        }
-                        if (operate.equals("=")) {
-                            query.addCriteria(Criteria.where(columnName).is(value));
-                        }
-                        if (operate.equals("<")) {
-                            query.addCriteria(Criteria.where(columnName).lt(value));
-                        }
-                        if (operate.equals("<=")) {
-                            query.addCriteria(Criteria.where(columnName).lte(value));
-                        }
-                        if (operate.equals("!=")) {
-                            query.addCriteria(Criteria.where(columnName).ne(value));
-                        }
-                    }
+                    Query query = selectManager.getQuery(content.getSubCommandOfWheres());
                     apiManager.deleteData(query, content.getTableNames().get(0).getTableName());
                     break;
                 case update:
-                    query = new Query();
-                    if (content.getSubCommandOfWheres().size() != 0) {
-                        for (SubCommandOfWhere subCommandOfWhere : content.getSubCommandOfWheres()) {
-                            if (subCommandOfWhere.getRightIsColumn() || subCommandOfWhere.getLeftIsValue() || subCommandOfWhere.getValueSecond() != null) {
-                                throw new Exception("not supported yet");
-                            }
-                            columnName = subCommandOfWhere.getColumnNameLeft().getColumnName();
-                            String value = subCommandOfWhere.getValueFirst();
-                            String operate = subCommandOfWhere.getOperation();
-                            if (operate.equals(">")) {
-                                query.addCriteria(Criteria.where(columnName).gte(value));
-                            }
-                            if (operate.equals(">=")) {
-                                query.addCriteria(Criteria.where(columnName).lte(value));
-                            }
-                            if (operate.equals("=")) {
-                                query.addCriteria(Criteria.where(columnName).is(value));
-                            }
-                            if (operate.equals("<")) {
-                                query.addCriteria(Criteria.where(columnName).lt(value));
-                            }
-                            if (operate.equals("<=")) {
-                                query.addCriteria(Criteria.where(columnName).lte(value));
-                            }
-                            if (operate.equals("!=")) {
-                                query.addCriteria(Criteria.where(columnName).ne(value));
-                            }
-                        }
-                    }
+                    query = selectManager.getQuery(content.getSubCommandOfWheres());
+                        /* if (subCommandOfWhere.getRightIsColumn() || subCommandOfWhere.getLeftIsValue() || subCommandOfWhere.getValueSecond() != null) {
+                                throw new Exception("not supported yet");}
+                          此处默认了一定是 column = value 的形式
+                           */
                     Update update = new Update();
                     for (SubCommandOfWhere updateElement : content.getUpdateElement()) {
                         if (updateElement.getLeftIsValue() || updateElement.getRightIsColumn() || updateElement.getValueSecond() != null) {
@@ -231,87 +181,36 @@ public class CommandHandler {
                     apiManager.updateData(query, update, content.getTableNames().get(0).getTableName());
                     break;
                 case select:
-//                    List<TableData> result;
-//                    switch (content.getTableNames().size()){
-//                        case 2:
-//                            result = selectManager.Join(content.getTableNames().get(0).getTableName(),
-//                                    content.getTableNames().get(0).getTableName(),
-//                                    content.getSubCommandOfWheres(),
-//                                    TableName.JoinType.innerJoin);
-//                            break;
-//                        case 1:
-//                            TableName temp = content.getTableNames().get(0);
-//                            if(temp.getNext() != null){
-//                                result = selectManager.Join(temp.getTableName(),
-//                                        temp.getNext().getTableName(),
-//                                        content.getSubCommandOfWheres(),
-//                                        temp.getJoinType());
-//                            }
-//                            else{
-//
-//                            }
-//                            break;
-//                        default:
-//                            throw new Exception("Not Supported yet");
-//                    }
-
-
-                    query = new Query();
-                    if (content.getSubCommandOfWheres().size() != 0) {
-                        for (SubCommandOfWhere subCommandOfWhere : content.getSubCommandOfWheres()) {
-                            if (subCommandOfWhere.getRightIsColumn() || subCommandOfWhere.getLeftIsValue() || subCommandOfWhere.getValueSecond() != null) {
-                                throw new Exception("not supported yet");
-                            }
-                            columnName = subCommandOfWhere.getColumnNameLeft().getColumnName();
-                            String value = subCommandOfWhere.getValueFirst();
-                            String operate = subCommandOfWhere.getOperation();
-                            if (operate.equals(">")) {
-                                query.addCriteria(Criteria.where(columnName).gte(value));
-                            }
-                            if (operate.equals(">=")) {
-                                query.addCriteria(Criteria.where(columnName).lte(value));
-                            }
-                            if (operate.equals("=")) {
-                                query.addCriteria(Criteria.where(columnName).is(value));
-                            }
-                            if (operate.equals("<")) {
-                                query.addCriteria(Criteria.where(columnName).lt(value));
-                            }
-                            if (operate.equals("<=")) {
-                                query.addCriteria(Criteria.where(columnName).lte(value));
-                            }
-                            if (operate.equals("!=")) {
-                                query.addCriteria(Criteria.where(columnName).ne(value));
-                            }
-                        }
-                    }
-                    List<String> columnNames = new ArrayList<>();
-                    for(ColumnName name : content.getColumnNames()){
-                        if(name.equals("*")){
-                            columnNames = apiManager.getTableColumns(content.getTableNames().get(0).getTableName());
+                    List<TableData> result;
+                    switch (content.getTableNames().size()){
+                        case 2:
+                            result = selectManager.join(content.getTableNames().get(0).getTableName(),
+                                    content.getTableNames().get(0).getTableName(),
+                                    content.getSubCommandOfWheres(),
+                                    TableName.JoinType.innerJoin);
                             break;
-                        }
-                        columnNames.add(name.getColumnName());
+                        case 1:
+                            TableName temp = content.getTableNames().get(0);
+                            if(temp.getNext() != null){
+                                result = selectManager.join(temp.getTableName(),
+                                        temp.getNext().getTableName(),
+                                        content.getSubCommandOfWheres(),
+                                        temp.getJoinType());
+                            }
+                            else{
+                                result = selectManager.single(content.getTableNames().get(0).getTableName(),
+                                        content.getSubCommandOfWheres());
+                            }
+                            break;
+                        default:
+                            throw new Exception("Not Supported yet");
                     }
-                    List<TableData> tableDatas = apiManager.selectData(query, content.getTableNames().get(0).getTableName());
-                    for (TableData tableData : tableDatas) {
-                        Map<String,Comparable> tempData = new HashMap<>();
-                        for(String name : columnNames){
-                            tempData.put(name,tableData.getData().get(name));
-                        }
-                        data.add(tempData);
-                    }
-                    handlerResult.setData(data);
-                    handlerResult.setColumns(columnNames);
+                    handlerResult = selectManager.getResult(result,content);
                     break;
             }
             //handlerResult here
             return handlerResult;
         }
-
-
-
-
 
         return null;
     }

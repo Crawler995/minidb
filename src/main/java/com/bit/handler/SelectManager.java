@@ -42,15 +42,56 @@ public class SelectManager {
             if (operate.equals("!=")) {
                 query.addCriteria(Criteria.where(columnName).ne(value));
             }
+            if(operate.equals("LIKE")){
+                query.addCriteria(Criteria.where(columnName).regex(value));
+            }
         }
         return query;
     }
 
-    public List<TableData> Single(String tableName,List<SubCommandOfWhere> conditions){
+    public HandlerResult getResult(List<TableData> tableDatas, CommandContent content) throws Exception {
+        HandlerResult handlerResult = new HandlerResult();
+        List<String> columnNames = new ArrayList<>();
+        List<Object> data = new ArrayList<>();
+
+        for(ColumnName name : content.getColumnNames()){
+            if(name.getColumnName().equals("*")){
+                columnNames = apiManager.getTableColumns(content.getTableNames().get(0).getTableName());
+                break;
+            }
+            columnNames.add(name.getColumnName());
+        }
+        for (TableData tableData : tableDatas) {
+            Map<String,Comparable> tempData = new HashMap<>();
+            for(String name : columnNames){
+                tempData.put(name,tableData.getData().get(name));
+            }
+            data.add(tempData);
+        }
+        handlerResult.setData(data);
+        handlerResult.setColumns(columnNames);
+
+        return handlerResult;
+    }
+
+    public List<TableData> single(String tableName,List<SubCommandOfWhere> conditions) throws Exception {
+        List<String> columnName = apiManager.getTableColumns(tableName);
+        for(SubCommandOfWhere command : conditions){
+            if(command.getColumnNameRight().getTableName() != null && !command.getColumnNameRight().getTableName().equals(tableName)){
+                throw new Exception("Unknown table" + tableName +  "in field list\n");
+
+            }
+
+            if(columnName.contains(command.getColumnNameRight().getColumnName())){
+                throw new Exception("Unknown column" + command.getColumnNameRight().getColumnName() +  "in field list\n");
+            }
+        }
+        Query  query = getQuery(conditions);
+        return apiManager.selectData(query,tableName);
 
     }
 
-    public List<TableData> Join(String left, String right, List<SubCommandOfWhere> conditions, TableName.JoinType joinType) throws Exception {
+    public List<TableData> join(String left, String right, List<SubCommandOfWhere> conditions, TableName.JoinType joinType) throws Exception {
         List<String> leftTableColumn = apiManager.getTableColumns(left);
         List<String> rightTableColumn = apiManager.getTableColumns(right);
         List<SubCommandGroup> subCommandGroups = new ArrayList<>();
@@ -144,10 +185,10 @@ public class SelectManager {
                                     }
                                     break;
                                 case leftJoin:
-                                    target.addAll(SpecificJoin(leftTable,leftColumnName,rightTable,rightColumnName));
+                                    target.addAll(specificJoin(leftTable,leftColumnName,rightTable,rightColumnName));
                                     break;
                                 case rightJoin:
-                                    target.addAll(SpecificJoin(rightTable,rightColumnName,leftTable,leftColumnName));
+                                    target.addAll(specificJoin(rightTable,rightColumnName,leftTable,leftColumnName));
                                     break;
                                 default:
                                     throw new Exception("Not supported this join type yet");
@@ -162,7 +203,7 @@ public class SelectManager {
         return lastReturn;
     }
 
-    public List<TableData> SpecificJoin(List<TableData> leftTable, String leftColumnName, List<TableData> rightTable,String rightColumnName){
+    public List<TableData> specificJoin(List<TableData> leftTable, String leftColumnName, List<TableData> rightTable,String rightColumnName){
         List<TableData> target = new ArrayList<>();
         for (TableData data : leftTable) {
             for (TableData tableData : rightTable) {
