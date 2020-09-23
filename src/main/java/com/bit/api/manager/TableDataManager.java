@@ -15,6 +15,8 @@ import com.esotericsoftware.kryo.io.Input;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author aerfafish
@@ -43,6 +45,11 @@ public class TableDataManager {
         }
         return columnName;
     }
+
+    public List<ColumnInfo> getColumnInfo() {
+        return table.getColumnInfo();
+    }
+
     public void insert(TableData tableData) throws Exception {
         transferTableData(tableData);
         byte[] dataBytes = KryoUtil.serialize(tableData);
@@ -368,10 +375,68 @@ public class TableDataManager {
         return true;
     }
 
+//    private Boolean compare(TableData tableData, Criteria criteria) {
+//        if (criteria.getKey().equals("$or")) {
+//
+//        }
+//        if (criteria.getKey().equals("$nor")) {
+//
+//        }
+//        if (criteria.getKey().equals("$and")) {
+//            List<Criteria> criteriaList = (List<Criteria>) criteria.getIsValue();
+//
+//            compare(tableData, )
+//        }
+//        if (criteria.getIsValue() != Criteria.NOT_SET) {
+//            return comparable.compareTo(Objects.requireNonNull(criteria.getIsValue())) == 0;
+//        }
+//
+//        if (criteria.getCriteria().size() == 0) {
+//            return true;
+//        }
+//        for (Map.Entry<String, Comparable> entry : criteria.getCriteria().entrySet()) {
+//            if (entry.getKey().equals("$gt")) {
+//                // 如果比他小于等于
+//                if (comparable.compareTo(entry.getValue()) <= 0) {
+//                    return false;
+//                }
+//            }
+//            if (entry.getKey().equals("$gte")) {
+//                if (comparable.compareTo(entry.getValue()) < 0) {
+//                    return false;
+//                }
+//            }
+//            if (entry.getKey().equals("$lt")) {
+//                if (comparable.compareTo(entry.getValue()) >= 0) {
+//                    return false;
+//                }
+//            }
+//            if (entry.getKey().equals("$lte")) {
+//                if (comparable.compareTo(entry.getValue()) > 0) {
+//                    return false;
+//                }
+//            }
+//            if (entry.getKey().equals("$ne")) {
+//                if (comparable.compareTo(entry.getValue()) == 0) {
+//                    return false;
+//                }
+//            }
+//        }
+//        return true;
+//    }
     private Boolean compare(Comparable comparable, Criteria criteria) {
-        if (criteria.getIsValue() != Criteria.NOT_SET) {
-            return comparable.compareTo(Objects.requireNonNull(criteria.getIsValue())) == 0;
+        Object value = criteria.getIsValue();
+        if (value != Criteria.NOT_SET) {
+            if (value instanceof Pattern && comparable instanceof String) {
+                Matcher matcher = ((Pattern) value).matcher((String) comparable);
+                if (matcher.find()) {
+                    return true;
+                }
+                return false;
+            }
+            return comparable.compareTo(Objects.requireNonNull(value)) == 0;
         }
+
         if (criteria.getCriteria().size() == 0) {
             return true;
         }

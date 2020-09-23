@@ -19,6 +19,8 @@ public class Criteria {
     @Nullable
     private String key;
 
+    private List<Criteria> criteriaChain;
+
     private LinkedHashMap<String, Comparable> criteria = new LinkedHashMap();
 
     public LinkedHashMap<String, Comparable> getCriteria() {
@@ -30,14 +32,18 @@ public class Criteria {
 
     public Criteria() {
         this.isValue = NOT_SET;
+        this.criteriaChain = new ArrayList();
     }
 
     public Criteria(String key) {
+        this.criteriaChain = new ArrayList();
         this.isValue = NOT_SET;
         this.key = key;
     }
 
     protected Criteria(List<Criteria> criteriaChain, String key) {
+        this.criteriaChain = criteriaChain;
+        this.criteriaChain.add(this);
         this.isValue = NOT_SET;
         this.key = key;
     }
@@ -102,8 +108,17 @@ public class Criteria {
         return this;
     }
 
-    public Criteria regex(String regex) {
-        return this.regex(regex, null);
+    public Criteria regex(String regex) throws Exception {
+//        return this.regex(regex, null);
+        Pattern pattern = Pattern.compile(regex);
+        if (!this.isValue.equals(NOT_SET)) {
+            throw new Exception("Multiple 'is' values declared. You need to use 'and' with multiple criteria");
+        } else if (this.lastOperatorWasNot()) {
+            throw new Exception("Invalid query: 'not' can't be used with 'is' - use 'ne' instead.");
+        } else {
+            this.isValue = pattern;
+            return this;
+        }
     }
 
     public Criteria regex(String regex, @Nullable String options) {
@@ -116,6 +131,30 @@ public class Criteria {
             return this.not(pattern.pattern());
         } else {
             this.isValue = pattern;
+            return this;
+        }
+    }
+
+    public Criteria orOperator(Criteria... criterias) throws Exception {
+        List<Criteria> criteriaList = new LinkedList<>(Arrays.asList(criterias));
+        return this.registerCriteriaChainElement((new Criteria("$or")).is(criteriaList));
+    }
+
+    public Criteria norOperator(Criteria... criterias) throws Exception {
+        List<Criteria> criteriaList = new LinkedList<>(Arrays.asList(criterias));
+        return this.registerCriteriaChainElement((new Criteria("$nor")).is(criteriaList));
+    }
+
+    public Criteria andOperator(Criteria... criterias) throws Exception {
+        List<Criteria> criteriaList = new LinkedList<>(Arrays.asList(criterias));
+        return this.registerCriteriaChainElement((new Criteria("$and")).is(criteriaList));
+    }
+
+    private Criteria registerCriteriaChainElement(Criteria criteria) {
+        if (this.lastOperatorWasNot()) {
+            throw new IllegalArgumentException("operator $not is not allowed around criteria chain element: " + criteria);
+        } else {
+            this.criteriaChain.add(criteria);
             return this;
         }
     }
@@ -162,5 +201,10 @@ public class Criteria {
 
     public void setIsValue(@Nullable Object isValue) {
         this.isValue = isValue;
+    }
+
+    public static void main(String[] args) throws Exception {
+        Criteria criteria = Criteria.where("id").lt(3).orOperator(Criteria.where("name").is("yhz")).andOperator(Criteria.where("age").not(20));
+        System.out.println(criteria);
     }
 }
