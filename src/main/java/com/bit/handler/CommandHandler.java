@@ -203,9 +203,16 @@ public class CommandHandler {
                         case 1:
                             TableName temp = content.getTableNames().get(0);
                             if(temp.getNext() != null){
+                                List<SubCommandOfWhere> temp_1 = new ArrayList<>();
+                                if(temp.getNext().getJoinExpression()!=null) {
+                                    temp_1.addAll(temp.getNext().getJoinExpression());
+                                }
+                                if(content.getSubCommandOfWheres() != null){
+                                    temp_1.addAll(content.getSubCommandOfWheres());
+                                }
                                 result = selectManager.join(temp.getTableName(),
                                         temp.getNext().getTableName(),
-                                        temp.getNext().getJoinExpression(),
+                                        temp_1,
                                         temp.getJoinType());
                             }
                             else{
