@@ -222,6 +222,7 @@ public class CommandHandler {
             }
             //handlerResult here
             long stopTime = System.currentTimeMillis();
+            handlerResult.setTotalTime(stopTime - startTime);
             results.add(handlerResult);
         }
 
