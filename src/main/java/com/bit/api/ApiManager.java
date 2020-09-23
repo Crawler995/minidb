@@ -3,6 +3,7 @@ package com.bit.api;
 import com.bit.api.manager.DatabaseManager;
 import com.bit.api.model.Query;
 import com.bit.api.model.Update;
+import com.bit.model.ColumnInfo;
 import com.bit.model.Database;
 import com.bit.model.Table;
 import com.bit.model.TableData;
@@ -276,4 +277,7 @@ public class ApiManager {
         return databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).getTableColumns();
     }
 
+    public List<ColumnInfo> getColumnInfo(String tableName) throws Exception {
+        return databaseManager.getTableManager(currentDatabase).getTableDataManager(tableName).getColumnInfo();
+    }
 }
