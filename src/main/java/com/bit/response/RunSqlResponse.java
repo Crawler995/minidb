@@ -23,8 +23,12 @@ public class RunSqlResponse {
 
     String curDatabase = "";
 
+    Error error = null;
+
     List<String> columns = new ArrayList<>();
 
     List<Object> data = new ArrayList<>();
+
+    Long tim
 
 }

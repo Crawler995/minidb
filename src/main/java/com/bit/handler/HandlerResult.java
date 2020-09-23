@@ -16,4 +16,6 @@ public class HandlerResult {
     List<String> columns = new ArrayList<>();
 
     List<Object> data =  new ArrayList<>();
+
+    long totalTime;
 }
