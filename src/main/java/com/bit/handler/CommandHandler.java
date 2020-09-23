@@ -131,7 +131,7 @@ public class CommandHandler {
 
                 case dropIndex:
                     String tableName = content.getIndexName().getTableName();
-                    String columnName = content.getIndexName().getColumnName();
+                    String columnName = content.getIndexName().getColumnNames().get(0);
                     if (tableName != null && columnName != null) {
                         apiManager.deleteIndex(tableName, columnName);
                     }
