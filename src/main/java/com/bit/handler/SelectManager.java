@@ -57,6 +57,9 @@ public class SelectManager {
         for(ColumnName name : content.getColumnNames()){
             if(name.getColumnName().equals("*")){
                 columnNames = apiManager.getTableColumns(content.getTableNames().get(0).getTableName());
+                if(content.getTableNames().size() == 2){
+                    columnNames.addAll(apiManager.getTableColumns(content.getTableNames().get(0).getTableName()));
+                }
                 break;
             }
             columnNames.add(name.getColumnName());

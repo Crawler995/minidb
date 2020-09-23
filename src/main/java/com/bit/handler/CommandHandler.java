@@ -217,6 +217,9 @@ public class CommandHandler {
                         default:
                             throw new Exception("Not Supported yet");
                     }
+
+
+
                     handlerResult =  selectManager.getResult(result,content);
                     break;
             }

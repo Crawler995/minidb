@@ -24,7 +24,7 @@ public class CommandTest {
 
     @Test
     public void commandTest() {
-        String command = "select * from table1 where id > 5 and address like \"address_\";";
+        String command = "create  select * from table1 where id > 5 and address like \"address_\";";
         try {
             List<HandlerResult> handlerResult = commandHandler.handle(command);
         } catch (Exception e) {
