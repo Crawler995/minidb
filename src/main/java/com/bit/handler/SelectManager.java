@@ -56,7 +56,8 @@ public class SelectManager {
 
         for(ColumnName name : content.getColumnNames()){
             if(name.getColumnName().equals("*")){
-                columnNames = apiManager.getTableColumns(content.getTableNames().get(0).getTableName());
+                columnNames.clear();
+                columnNames.addAll(tableDatas.get(0).getData().keySet());
                 break;
             }
             columnNames.add(name.getColumnName());
@@ -77,13 +78,13 @@ public class SelectManager {
     public List<TableData> single(String tableName,List<SubCommandOfWhere> conditions) throws Exception {
         List<String> columnName = apiManager.getTableColumns(tableName);
         for(SubCommandOfWhere command : conditions){
-            if(command.getColumnNameRight().getTableName() != null && !command.getColumnNameRight().getTableName().equals(tableName)){
-                throw new Exception("Unknown table" + tableName +  "in field list\n");
+            if(command.getColumnNameLeft().getTableName() != null && !command.getColumnNameLeft().getTableName().equals(tableName)){
+                throw new Exception("Unknown table " + tableName +  " in field list\n");
 
             }
 
-            if(columnName.contains(command.getColumnNameRight().getColumnName())){
-                throw new Exception("Unknown column" + command.getColumnNameRight().getColumnName() +  "in field list\n");
+            if(!columnName.contains(command.getColumnNameLeft().getColumnName())){
+                throw new Exception("Unknown column " + command.getColumnNameLeft().getColumnName() +  " in field list\n");
             }
         }
         Query  query = getQuery(conditions);
@@ -100,12 +101,17 @@ public class SelectManager {
         /* no xor*/
         for(int i = 0; i < conditions.size(); i++){
             SubCommandGroup subCommandGroup = new SubCommandGroup();
-            while(conditions.get(i).getLogicalOperation().equals("AND") && i < conditions.size()){
-                subCommandGroup.add(conditions.get(i++));
-                if(!conditions.get(i).getOperation().equals("AND")){
-                    subCommandGroup.add(conditions.get(i));
-                    break;
+            if(conditions.get(i).getLogicalOperation() != null) {
+                while (conditions.get(i).getLogicalOperation() != null && conditions.get(i).getLogicalOperation().equals("AND") && i < conditions.size()) {
+                    subCommandGroup.add(conditions.get(i++));
+                    if (!conditions.get(i).getOperation().equals("AND")) {
+                        subCommandGroup.add(conditions.get(i));
+                        break;
+                    }
                 }
+            }
+            else{
+                subCommandGroup.add(conditions.get(i));
             }
             subCommandGroups.add(subCommandGroup);
         }
@@ -134,7 +140,7 @@ public class SelectManager {
             }
             //直接查询
             List<TableData> leftTable = apiManager.selectData(getQuery(leftGroup.getGroup()), left);
-            List<TableData> rightTable = apiManager.selectData(getQuery(rightGroup.getGroup()), left);
+            List<TableData> rightTable = apiManager.selectData(getQuery(rightGroup.getGroup()), right);
             List<TableData> target = new ArrayList<>();
             //连接操作
             if(commands.size() == 0){
@@ -171,28 +177,34 @@ public class SelectManager {
 
                             switch (joinType){
                                 case innerJoin:
-                                    for (TableData data : leftTable) {
-                                        for (TableData tableData : rightTable) {
-                                            boolean flag = false;
-                                            if (data.getData().get(leftColumnName) == tableData.getData().get(rightColumnName)) {
-                                                flag = true;
-                                                target.add(tableData);
-                                            }
-                                            if (flag) {
+
+                                    for (TableData leftData : leftTable) {
+                                        for (TableData rightData : rightTable) {
+                                            if (leftData.getData().get(leftColumnName) == rightData.getData().get(rightColumnName)) {
+                                                Map<String,Comparable> temp = new HashMap<>();
+                                                for(String leftName : leftTableColumn){
+                                                    temp.put(leftName,leftData.getData().get(leftName));
+                                                }
+                                                for(String rightName : rightTableColumn){
+                                                    temp.put(rightName,rightData.getData().get(rightName));
+                                                }
+                                                TableData data = new TableData();
+                                                data.setData(temp);
                                                 target.add(data);
                                             }
                                         }
                                     }
                                     break;
                                 case leftJoin:
-                                    target.addAll(specificJoin(leftTable,leftColumnName,rightTable,rightColumnName));
+                                    target.addAll(specificJoin(leftTable,leftColumnName,rightTable,rightColumnName,leftTableColumn,rightTableColumn));
                                     break;
                                 case rightJoin:
-                                    target.addAll(specificJoin(rightTable,rightColumnName,leftTable,leftColumnName));
+                                    target.addAll(specificJoin(rightTable,rightColumnName,leftTable,leftColumnName,leftTableColumn,rightTableColumn));
                                     break;
                                 default:
                                     throw new Exception("Not supported this join type yet");
                             }
+                            break;
                         default:
                             throw new Exception("Not Supported yet");
                     }
@@ -203,16 +215,31 @@ public class SelectManager {
         return lastReturn;
     }
 
-    public List<TableData> specificJoin(List<TableData> leftTable, String leftColumnName, List<TableData> rightTable,String rightColumnName){
+    public List<TableData> specificJoin(List<TableData> leftTable, String leftColumnName, List<TableData> rightTable,String rightColumnName,List<String> leftTableColumn,List<String> rightTableColumn){
         List<TableData> target = new ArrayList<>();
-        for (TableData data : leftTable) {
-            for (TableData tableData : rightTable) {
-                if (data.getData().get(leftColumnName) == tableData.getData().get(rightColumnName)) {
-                    target.add(tableData);
+        for (TableData leftData : leftTable) {
+            boolean flag = false;
+            Map<String,Comparable> temp = new HashMap<>();
+            for(String leftName : leftTableColumn){
+                temp.put(leftName,leftData.getData().get(leftName));
+            }
+            for (TableData rightData : rightTable) {
+                if (leftData.getData().get(leftColumnName) == rightData.getData().get(rightColumnName)) {
+                    flag = true;
+                    for(String rightName : rightTableColumn){
+                        temp.put(rightName,rightData.getData().get(rightName));
+                    }
                 }
             }
+            if(!flag){
+                for(String rightName : rightTableColumn){
+                    temp.put(rightName,null);
+                }
+            }
+            TableData data = new TableData();
+            data.setData(temp);
+            target.add(data);
         }
-        target.addAll(leftTable);
         return target;
     }
 }
