@@ -48,6 +48,7 @@ public class CommandController {
         } catch (Exception e) {
             runSqlResponse.setMessage(e.getMessage() == null ? "" : e.getMessage());
             runSqlResponse.setStatus(false);
+            e.printStackTrace();
         }
         runSqlResponse.setTime(sdf.format(date));
         long endTime = System.currentTimeMillis();

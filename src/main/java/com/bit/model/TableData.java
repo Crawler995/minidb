@@ -17,3 +17,9 @@ public class TableData {
      */
     private Map<String, Comparable> data = new HashMap<>();
 }
+/**
+ * 解析like
+ * 返回
+ * join
+ *
+ **/
