@@ -505,7 +505,7 @@ public class TableDataManager {
                 return columnInfo;
             }
         }
-        throw new Exception("不存在该列");
+        throw new Exception("不存在该列 "+columnName);
     }
 
     public void transferTableData(TableData tableData) throws Exception {

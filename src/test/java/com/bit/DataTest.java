@@ -321,45 +321,54 @@ public class DataTest {
 
     @Test
     public void insertTest() throws Exception {
-        apiManager.createDatabase(new Database("bit", null));
-        apiManager.useDatabase("bit");
+//        apiManager.createDatabase(new Database("DB1", null));
+        apiManager.useDatabase("DB1");
+
         Table table = new Table();
         List<ColumnInfo> columnInfos = new ArrayList<>();
-        columnInfos.add(new ColumnInfo("id", DataType.LONG));
-        columnInfos.add(new ColumnInfo("name", DataType.STRING));
-        columnInfos.add(new ColumnInfo("age", DataType.INT));
+        columnInfos.add(new ColumnInfo("TABLE2_ID", DataType.INT));
+        columnInfos.add(new ColumnInfo("TABLE2_FRIEND_ID", DataType.INT));
+        columnInfos.add(new ColumnInfo("TABLE2_LAST_NAME", DataType.STRING));
+        columnInfos.add(new ColumnInfo("TABLE2_FIRST_NAME", DataType.STRING));
+//        columnInfos.add(new ColumnInfo("TABLE2_ADDRESS", DataType.STRING));
+//        columnInfos.add(new ColumnInfo("TABLE2_CITY", DataType.STRING));
+//        columnInfos.add(new ColumnInfo("TABLE2_AGE", DataType.INT));
         table.setColumnInfo(columnInfos);
-        table.setTableName("student");
+        table.setTableName("TABLE2");
         apiManager.createTable(table);
         long startTime = System.currentTimeMillis();
-        for (long i = 0; i < 200000; i++) {
+        for (long i = 0; i < 20; i++) {
             Update update = new Update();
-            update.set("id", i+1000+"");
-            update.set("name", "yhz"+i);
-            update.set("age", i%20+"");
-            apiManager.insertData(update, "student");
+            update.set("TABLE2_ID", i+"");
+            update.set("TABLE2_FRIEND_ID", i+"");
+            update.set("TABLE2_LAST_NAME", "LAST"+(i));
+            update.set("TABLE2_FIRST_NAME", "FIRST"+(i));
+//            update.set("TABLE2_AGE", (20+1)+"");
+//            update.set("TABLE2_ADDRESS", "ADDRESS2"+(i+1));
+//            update.set("TABLE2_CITY", "CITY"+(i+1));
+            apiManager.insertData(update, "TABLE2");
         }
         long endTime = System.currentTimeMillis();
         System.out.println("插入数据花费时间：" + (endTime-startTime));
 
-        startTime = System.currentTimeMillis();
-        Query query = new Query();
-        query.addCriteria(Criteria.where("id").is("23000"));
-        System.out.println(apiManager.selectData(query, "student"));
-        endTime = System.currentTimeMillis();
-        System.out.println("没有索引查询花费时间：" + (endTime-startTime));
-
-        startTime = System.currentTimeMillis();
-        apiManager.createIndex("student", "id");
-        endTime = System.currentTimeMillis();
-        System.out.println("建立索引花费时间：" + (endTime-startTime));
-
-        startTime = System.currentTimeMillis();
-        query = new Query();
-        query.addCriteria(Criteria.where("id").is("122000"));
-        System.out.println(apiManager.selectData(query, "student"));
-        endTime = System.currentTimeMillis();
-        System.out.println("存在索引查询花费时间：" + (endTime-startTime));
+//        startTime = System.currentTimeMillis();
+//        Query query = new Query();
+//        query.addCriteria(Criteria.where("id").is("23000"));
+//        System.out.println(apiManager.selectData(query, "student"));
+//        endTime = System.currentTimeMillis();
+//        System.out.println("没有索引查询花费时间：" + (endTime-startTime));
+//
+//        startTime = System.currentTimeMillis();
+//        apiManager.createIndex("student", "id");
+//        endTime = System.currentTimeMillis();
+//        System.out.println("建立索引花费时间：" + (endTime-startTime));
+//
+//        startTime = System.currentTimeMillis();
+//        query = new Query();
+//        query.addCriteria(Criteria.where("id").is("122000"));
+//        System.out.println(apiManager.selectData(query, "student"));
+//        endTime = System.currentTimeMillis();
+//        System.out.println("存在索引查询花费时间：" + (endTime-startTime));
 
 
     }
