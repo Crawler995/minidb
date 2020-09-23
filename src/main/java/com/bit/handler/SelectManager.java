@@ -46,7 +46,11 @@ public class SelectManager {
         return query;
     }
 
-    public List<TableData> InnerJoin(String left, String right, List<SubCommandOfWhere> conditions, TableName.JoinType joinType) throws Exception {
+    public List<TableData> Single(String tableName,List<SubCommandOfWhere> conditions){
+
+    }
+
+    public List<TableData> Join(String left, String right, List<SubCommandOfWhere> conditions, TableName.JoinType joinType) throws Exception {
         List<String> leftTableColumn = apiManager.getTableColumns(left);
         List<String> rightTableColumn = apiManager.getTableColumns(right);
         List<SubCommandGroup> subCommandGroups = new ArrayList<>();
