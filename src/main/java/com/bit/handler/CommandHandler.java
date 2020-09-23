@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author aerfafish
@@ -37,13 +39,24 @@ public class CommandHandler {
         if ("exit".equals(command)) {
             System.exit(0);
         }
+        command = command.toUpperCase();
+        final String regex = "\"(.*?)\"";
+        final Pattern pattern = Pattern.compile(regex);
+        final Matcher matcher = pattern.matcher(command);
+        while (matcher.find()) {
+            System.out.println("Full match: " + matcher.group(0));
+            for (int i = 0; i < matcher.groupCount(); i++) {
+                System.out.println("Group " + i + ": " + matcher.group(i));
+                command = command.replace(matcher.group(i), matcher.group(i).toLowerCase());
+            }
+        }
 
         /**
          * 增加其他处理
          */
         List<CommandContent> commandContents = new ArrayList<>();
 
-        CharStream stream = CharStreams.fromString(command.toUpperCase()); // 将命令读入字节符号流
+        CharStream stream = CharStreams.fromString(command); // 将命令读入字节符号流
         MySqlLexer lexer = new MySqlLexer(stream);//新建一个词法分析器，处理输入的字节流
         CommonTokenStream token = new CommonTokenStream(lexer);//新建一个词法符号的缓冲区，用于存储词法分析器将生成的词法符号
         MySqlParser parser = new MySqlParser(token);//新建一个语法分析器，处理词法符号缓冲区的内容

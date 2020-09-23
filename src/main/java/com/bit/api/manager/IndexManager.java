@@ -25,6 +25,10 @@ public class IndexManager {
         tree.insert(new Point(key, pageNum));
     }
 
+    public void insert(Comparable key, Long pageNum, Boolean isStore) {
+        tree.insert(new Point(key, pageNum));
+    }
+
     public Set<Long> select(Comparable key) {
         return tree.get(key);
     }

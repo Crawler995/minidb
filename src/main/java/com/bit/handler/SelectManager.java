@@ -99,7 +99,7 @@ public class SelectManager {
 
         /* can't deal with quote priority*/
         /* no xor*/
-        for(int i = 0; i < conditions.size(); i++){
+         for(int i = 0; i < conditions.size(); i++){
             SubCommandGroup subCommandGroup = new SubCommandGroup();
             if(conditions.get(i).getLogicalOperation() != null) {
                 while (conditions.get(i).getLogicalOperation() != null && conditions.get(i).getLogicalOperation().equals("AND") && i < conditions.size()) {

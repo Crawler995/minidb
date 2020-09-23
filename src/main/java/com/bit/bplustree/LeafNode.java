@@ -170,7 +170,7 @@ public class LeafNode extends AbstractNode {
                 tree.updateToFile(leafNum);
             }
         }
-        tree.updateToFile(tree.getNum(this));
+//        tree.updateToFile(tree.getNum(this));
     }
 
     @Override
