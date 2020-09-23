@@ -8,6 +8,8 @@ public class SubCommandOfWhere {
     String operation;
     String valueFirst = null;
     String valueSecond = null;
+    Boolean leftQuote = false;
+    Boolean rightQuote = false;
 
     String logicalOperation;
 
@@ -37,6 +39,22 @@ public class SubCommandOfWhere {
         this.operation = operation;
         this.valueFirst = value;
         this.valueSecond = value_1;
+    }
+
+    public void setLeftQuote(Boolean leftQuote) {
+        this.leftQuote = leftQuote;
+    }
+
+    public void setRightQuote(Boolean rightQuote) {
+        this.rightQuote = rightQuote;
+    }
+
+    public Boolean getLeftQuote() {
+        return leftQuote;
+    }
+
+    public Boolean getRightQuote() {
+        return rightQuote;
     }
 
     public String getOperation() {
