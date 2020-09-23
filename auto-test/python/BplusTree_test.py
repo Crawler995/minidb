@@ -1,73 +1,30 @@
 import unittest
+import requests
+import json
 
-from minidb_run import run_commands_in_minidb
+from minidb_run import resolve_arr, resolve_obj
 
 
 class BplussTreeTest(unittest.TestCase):
     def test_insert_and_get_1(self):
-        n = 100
-        test_commands = []
-        for i in range(1, n + 1):
-            test_commands.append('insert')
-            test_commands.append(str(i))
-            test_commands.append(str(i) + str(i))
-        for i in range(1, n + 1):
-            test_commands.append('get')
-            test_commands.append(str(i))
+        test_commands_arr = [
+            'create database auto_test_db;',
+            'use auto_test_db;',
+            'create table auto_test_table_1 (id long, name varchar);',
+            'insert into auto_test_table_1(id, name) values(1, "name1");',
+            'insert into auto_test_table_1(id, name) values(2, "name2");',
+            'insert into auto_test_table_1(id, name) values(3, "name3");',
+            'select * from auto_test_table_1;'
+        ]
+        test_commands = '\n'.join(test_commands_arr)
 
-        expected_output = []
-        for i in range(1, n + 1):
-            expected_output.append('[%d%d]' % (i, i))
-
-        real_output = run_commands_in_minidb(test_commands)
-        
-        self.assertListEqual(real_output, expected_output)
-
-    def test_insert_and_get_2(self):
-        n = 50
-        test_commands = []
-        for i in range(1, n + 1):
-            test_commands.append('insert')
-            test_commands.append(str(i))
-            test_commands.append(str(i) + str(i))
-            test_commands.append('insert')
-            test_commands.append(str(i))
-            test_commands.append(str(i) + str(i) + str(i))
-        for i in range(1, n + 1):
-            test_commands.append('get')
-            test_commands.append(str(i))
-
-        expected_output = []
-        for i in range(1, n + 1):
-            expected_output.append('[%d%d, %d%d%d]' % (i, i, i, i, i))
-
-        real_output = run_commands_in_minidb(test_commands)
-        
-        self.assertListEqual(real_output, expected_output)
-
-    def test_update_1(self):
-        n = 50
-        test_commands = []
-        for i in range(1, n + 1):
-            test_commands.append('insert')
-            test_commands.append(str(i))
-            test_commands.append(str(i) + str(i))
-        for i in range(1, n + 1):
-            test_commands.append('update')
-            test_commands.append(str(i))
-            test_commands.append(str(i) + str(i))
-            test_commands.append(str(i) + str(i) + str(i))
-        for i in range(1, n + 1):
-            test_commands.append('get')
-            test_commands.append(str(i))
-
-        expected_output = []
-        for i in range(1, n + 1):
-            expected_output.append('[%d%d%d]' % (i, i, i))
-
-        real_output = run_commands_in_minidb(test_commands)
-        
-        self.assertListEqual(real_output, expected_output)
+        res = requests.post('http://localhost:8082/api/runsql', json={ 'command': test_commands }).json()
+        self.assertListEqual(res[len(res) - 1]['columns'], resolve_arr(['id', 'name']))
+        self.assertListEqual(res[len(res) - 1]['data'], resolve_obj([
+            { 'id': 1, 'name': 'name1' },
+            { 'id': 2, 'name': 'name2' },
+            { 'id': 3, 'name': 'name3' },
+        ]))
 
 
 if __name__ == "__main__":

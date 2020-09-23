@@ -68,3 +68,18 @@ def run_commands_in_minidb(commands, delete_minidb_files_before_run=True):
     available_output = __get_available_output_from_raw_output(raw_output)
 
     return available_output
+
+def resolve_arr(arr):
+    res = []
+    for item in arr:
+        res.append(item.upper())
+    return res
+
+def resolve_obj(obj):
+    res = []
+    for item in obj:
+        tmp = {}
+        for key in item.keys():
+            tmp[key.upper()] = item[key]
+        res.append(tmp)
+    return res
