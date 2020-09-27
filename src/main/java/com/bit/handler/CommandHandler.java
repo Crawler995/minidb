@@ -109,6 +109,10 @@ public class CommandHandler {
                             case "CHAR":
                                 columnInfo.setType(DataType.STRING);
                                 break;
+                            case "DATETIME":
+                            case "DATE":
+                                columnInfo.setType(DataType.DATETIME);
+                                break;
                             default:
                                 columnInfo.setType(DataType.ERROR);
                                 break;
