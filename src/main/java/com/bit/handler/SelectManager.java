@@ -132,7 +132,7 @@ public class SelectManager {
                     } else if ((tableName == null || tableName.equals(right)) && rightTableColumn.contains(columnName)) {
                         rightGroup.add(command);
                     } else {
-                        throw new Exception("Wrong Join Condition.");
+                        throw new Exception("Unknown table or column in field list\n");
                     }
                     iterator.remove();
                 }

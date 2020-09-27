@@ -24,7 +24,7 @@ public class CommandTest {
 
     @Test
     public void commandTest() {
-        String command = "create index index_name on table1(Table1_ID)";
+        String command = "select * from table1 left join table2 on table1.table1_id = table2.table2_friend_id";
         try {
             List<HandlerResult> handlerResult = commandHandler.handle(command);
             System.out.println("");
