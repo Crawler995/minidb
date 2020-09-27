@@ -10,6 +10,7 @@ public enum DataType {
     STRING,
     FLOAT,
     DOUBLE,
+    DATETIME,
     ERROR;
 
     public static DataType valueOf(int index) {
@@ -24,6 +25,8 @@ public enum DataType {
                 return FLOAT;
             case 4:
                 return DOUBLE;
+            case 5:
+                return DATETIME;
             default:
                 return ERROR;
         }

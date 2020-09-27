@@ -1,19 +1,24 @@
 package com.bit.api.manager;
 
 import com.bit.api.model.Criteria;
+import com.bit.api.model.IndexQuery;
 import com.bit.api.model.Query;
 import com.bit.api.model.Update;
-import com.bit.api.model.IndexQuery;
 import com.bit.constance.DBConfig;
 import com.bit.constance.DataType;
 import com.bit.exception.IndexExistException;
-import com.bit.model.*;
+import com.bit.model.ColumnInfo;
+import com.bit.model.Table;
+import com.bit.model.TableData;
 import com.bit.utils.FileUtil;
 import com.bit.utils.KryoUtil;
 import com.bit.utils.QueryUtil;
 import com.esotericsoftware.kryo.io.Input;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -535,6 +540,22 @@ public class TableDataManager {
                 return str;
             }
         }
+        if (type == DataType.DATETIME) {
+            try {
+                if (str.indexOf("\"") == 0 && str.lastIndexOf("\"") == str.length()-1) {
+                    str = str.substring(1, str.length()-1);
+                }
+                str = str.trim();
+                SimpleDateFormat parser = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+                if (str.length() < 12) {
+                    str = str + " 00:00:00";
+                }
+                return parser.parse(str);
+            } catch (Exception e) {
+                throw new Exception("日期格式不正确 请更改为yyyy-mm-dd hh:mm:ss 或 yyyy-mm-dd");
+            }
+
+        }
         throw new Exception("不存在该类型");
     }
 
@@ -554,6 +575,9 @@ public class TableDataManager {
         }
         if (type == DataType.FLOAT) {
             return (Float) object;
+        }
+        if (type == DataType.DATETIME) {
+            return (Date) object;
         }
         return null;
     }
@@ -596,6 +620,23 @@ public class TableDataManager {
                 }
 
             }
+            if (type == DataType.DATETIME) {
+                try {
+                    String str = (String) entry.getValue();
+                    if (str.indexOf("\"") == 0 && str.lastIndexOf("\"") == str.length()-1) {
+                        str = str.substring(1, str.length()-1);
+                    }
+                    str = str.trim();
+                    SimpleDateFormat parser = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+                    if (str.length() < 12) {
+                        str = str + " 00:00:00";
+                    }
+                    Date date = parser.parse(str);
+                    entry.setValue(date);
+                } catch (Exception e) {
+                    throw new Exception("日期格式不正确 请更改为yyyy-mm-dd hh:mm:ss 或 yyyy-mm-dd");
+                }
+            }
         }
     }
     private void transferUpdate(Update update) throws Exception {
@@ -623,6 +664,23 @@ public class TableDataManager {
                     entry.setValue(value.substring(1, value.length()-1));
                 } else {
                     entry.setValue(value);
+                }
+            }
+            if (type == DataType.DATETIME) {
+                try {
+                    String str = (String) entry.getValue();
+                    if (str.indexOf("\"") == 0 && str.lastIndexOf("\"") == str.length()-1) {
+                        str = str.substring(1, str.length()-1);
+                    }
+                    str = str.trim();
+                    SimpleDateFormat parser = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+                    if (str.length() < 12) {
+                        str = str + " 00:00:00";
+                    }
+                    Date date = parser.parse(str);
+                    entry.setValue(date);
+                } catch (Exception e) {
+                    throw new Exception("日期格式不正确 请更改为yyyy-mm-dd hh:mm:ss 或 yyyy-mm-dd");
                 }
             }
         }
