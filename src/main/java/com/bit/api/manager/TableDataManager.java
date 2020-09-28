@@ -546,9 +546,9 @@ public class TableDataManager {
                 str = str.substring(1, str.length()-1);
             }
             str = str.trim();
-            SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+            SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             if (str.length() < 12) {
-                str = str + " 00:00:00";
+                str = str + " 01:00:00";
             }
             parser.setLenient(false);
             parser.parse(str);
@@ -575,7 +575,7 @@ public class TableDataManager {
             return (Float) object;
         }
         if (type == DataType.DATETIME) {
-            SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+            SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             try {
                 return parser.parse((String) object);
             } catch (ParseException e) {
@@ -629,7 +629,7 @@ public class TableDataManager {
                     str = str.substring(1, str.length() - 1);
                 }
                 str = str.trim();
-                SimpleDateFormat parser = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+                SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 if (str.length() < 12) {
                     str = str + " 00:00:00";
                 }
@@ -672,7 +672,7 @@ public class TableDataManager {
                         str = str.substring(1, str.length()-1);
                     }
                     str = str.trim();
-                    SimpleDateFormat parser = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+                    SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
                     if (str.length() < 12) {
                         str = str + " 00:00:00";
                     }
@@ -708,5 +708,4 @@ public class TableDataManager {
     public void setTable(Table table) {
         this.table = table;
     }
-
 }
