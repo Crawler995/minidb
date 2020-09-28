@@ -546,7 +546,7 @@ public class TableDataManager {
                     str = str.substring(1, str.length()-1);
                 }
                 str = str.trim();
-                SimpleDateFormat parser = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+                SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
                 if (str.length() < 12) {
                     str = str + " 00:00:00";
                 }
