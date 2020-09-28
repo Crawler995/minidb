@@ -65,7 +65,7 @@ public class SelectManager {
         for (TableData tableData : tableDatas) {
             Map<String,Comparable> tempData = new HashMap<>();
             for(String name : columnNames){
-                tempData.put(name,tableData.getData().get(name));
+                tempData.put(name,tableData.getData().get(name).toString());
             }
             data.add(tempData);
         }
