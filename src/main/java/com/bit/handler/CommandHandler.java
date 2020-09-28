@@ -224,10 +224,12 @@ public class CommandHandler {
                                 if(temp.getNext().getJoinExpression()!=null) {
                                     List<SubCommandOfWhere> temp2 = temp.getNext().getJoinExpression();
                                     SubCommandOfWhere temp3 = temp2.get(temp2.size() - 1);
-                                    temp3.setLogicalOperation("AND");
+                                    if(content.getSubCommandOfWheres().size() != 0) {
+                                        temp3.setLogicalOperation("AND");
+                                    }
                                     temp1.addAll(temp2);
                                 }
-                                if(content.getSubCommandOfWheres() != null){
+                                if(content.getSubCommandOfWheres().size() != 0){
                                     temp1.addAll(content.getSubCommandOfWheres());
                                 }
                                 result = selectManager.join(temp.getTableName(),
