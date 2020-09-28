@@ -542,21 +542,17 @@ public class TableDataManager {
             }
         }
         if (type == DataType.DATETIME) {
-            try {
-                if (str.indexOf("\"") == 0 && str.lastIndexOf("\"") == str.length()-1) {
-                    str = str.substring(1, str.length()-1);
-                }
-                str = str.trim();
-                SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-                if (str.length() < 12) {
-                    str = str + " 00:00:00";
-                }
-                parser.parse(str);
-                return str;
-            } catch (Exception e) {
-                throw new Exception("日期格式不正确 请更改为yyyy-mm-dd hh:mm:ss 或 yyyy-mm-dd");
+            if (str.indexOf("\"") == 0 && str.lastIndexOf("\"") == str.length()-1) {
+                str = str.substring(1, str.length()-1);
             }
-
+            str = str.trim();
+            SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+            if (str.length() < 12) {
+                str = str + " 00:00:00";
+            }
+            parser.setLenient(false);
+            parser.parse(str);
+            return str;
         }
         throw new Exception("不存在该类型");
     }
@@ -628,21 +624,17 @@ public class TableDataManager {
 
             }
             if (type == DataType.DATETIME) {
-                try {
-                    String str = (String) entry.getValue();
-                    if (str.indexOf("\"") == 0 && str.lastIndexOf("\"") == str.length()-1) {
-                        str = str.substring(1, str.length()-1);
-                    }
-                    str = str.trim();
-                    SimpleDateFormat parser = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
-                    if (str.length() < 12) {
-                        str = str + " 00:00:00";
-                    }
-                    Date date = parser.parse(str);
-                    entry.setValue(str);
-                } catch (Exception e) {
-                    throw new Exception("日期格式不正确 请更改为yyyy-mm-dd hh:mm:ss 或 yyyy-mm-dd");
+                String str = (String) entry.getValue();
+                if (str.indexOf("\"") == 0 && str.lastIndexOf("\"") == str.length() - 1) {
+                    str = str.substring(1, str.length() - 1);
                 }
+                str = str.trim();
+                SimpleDateFormat parser = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+                if (str.length() < 12) {
+                    str = str + " 00:00:00";
+                }
+                Date date = parser.parse(str);
+                entry.setValue(str);
             }
         }
     }
