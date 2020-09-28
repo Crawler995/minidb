@@ -551,6 +551,7 @@ public class TableDataManager {
                 if (str.length() < 12) {
                     str = str + " 00:00:00";
                 }
+                parser.parse(str);
                 return str;
             } catch (Exception e) {
                 throw new Exception("日期格式不正确 请更改为yyyy-mm-dd hh:mm:ss 或 yyyy-mm-dd");
