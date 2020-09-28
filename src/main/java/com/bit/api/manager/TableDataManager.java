@@ -18,6 +18,7 @@ import com.esotericsoftware.kryo.io.Input;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -550,7 +551,7 @@ public class TableDataManager {
                 if (str.length() < 12) {
                     str = str + " 00:00:00";
                 }
-                return parser.parse(str);
+                return str;
             } catch (Exception e) {
                 throw new Exception("日期格式不正确 请更改为yyyy-mm-dd hh:mm:ss 或 yyyy-mm-dd");
             }
@@ -577,7 +578,12 @@ public class TableDataManager {
             return (Float) object;
         }
         if (type == DataType.DATETIME) {
-            return (Date) object;
+            SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+            try {
+                return parser.parse((String) object);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
         }
         return null;
     }
@@ -632,7 +638,7 @@ public class TableDataManager {
                         str = str + " 00:00:00";
                     }
                     Date date = parser.parse(str);
-                    entry.setValue(date);
+                    entry.setValue(str);
                 } catch (Exception e) {
                     throw new Exception("日期格式不正确 请更改为yyyy-mm-dd hh:mm:ss 或 yyyy-mm-dd");
                 }
@@ -678,7 +684,7 @@ public class TableDataManager {
                         str = str + " 00:00:00";
                     }
                     Date date = parser.parse(str);
-                    entry.setValue(date);
+                    entry.setValue(str);
                 } catch (Exception e) {
                     throw new Exception("日期格式不正确 请更改为yyyy-mm-dd hh:mm:ss 或 yyyy-mm-dd");
                 }
